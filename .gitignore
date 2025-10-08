@@ -1,0 +1,57 @@
+# === Node / TypeScript ===
+node_modules/
+dist/
+out/
+coverage/
+temp/
+tmp/
+logs/
+*.log
+*.tsbuildinfo
+
+# === VSCode Extension build ===
+.vscode-test/
+.vscode-test-web/
+.vscode-test-server/
+.vscode-test-explorer/
+
+# === Sistema operacional ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# === IDEs ===
+.vscode/
+.idea/
+*.code-workspace
+
+# === Builds e empacotamento ===
+*.vsix
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# === ANTLR generated files (caso gere gramáticas personalizadas futuramente) ===
+*.interp
+*.tokens
+*.g4
+*.g4.js
+*.g4.ts
+*.g4.d.ts
+
+# === Test artifacts ===
+test-results/
+reports/
+*.spec.js
+*.spec.ts
+*.test.js
+*.test.ts
+
+# === Sistema de controle de versão auxiliar ===
+.env
+.env.local
+.env.development
+.env.production
+.env.test

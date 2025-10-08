@@ -1,0 +1,61 @@
+{
+  "name": "apex-sentinel",
+  "displayName": "Apex Sentinel",
+  "description": "Extensão VSCode para análise estática e qualidade de código Apex em tempo real.",
+  "version": "0.0.1",
+  "publisher": "pedro Aires",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:apex",
+    "onCommand:apex-sentinel.analyzeFile"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "apex-sentinel.analyzeFile",
+        "title": "Apex Sentinel: Analyze Apex Code"
+      }
+    ],
+    "languages": [
+      {
+        "id": "apex",
+        "aliases": [
+          "Apex",
+          "apex"
+        ],
+        "extensions": [
+          ".cls"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.104.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.32.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "antlr4": "^4.13.2",
+    "apex-parser": "^2.17.0"
+  }
+}
