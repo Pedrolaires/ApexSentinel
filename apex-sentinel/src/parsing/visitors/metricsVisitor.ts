@@ -1,58 +1,52 @@
-import { ASTNode } from './../parseAdapter';
+// src/parsing/visitors/metricsVisitor.ts
 
-/**
- * MetricVisitor
- * Classe responsável por percorrer a AST e extrair métricas relevantes do código Apex.
- * 
- * Essa implementação inicial coleta:
- * - Número total de métodos
- * - Tamanho (em linhas) de cada método
- * - Número total de linhas da classe
- * 
- * Futuramente, pode ser expandida para calcular:
- * - Complexidade ciclomática
- * - Aprofundamento de aninhamentos
- * - Contagem de instruções
- */
+// Importa o visitor gerado pelo apex-parser (JS)
+const { ApexParserVisitor } = require('apex-parser/lib/ApexParserVisitor.js');
 
 export class MetricVisitor {
-  private metrics: Map<string, any> = new Map();
+  constructor() {
+    // Cria uma instância real do visitor base
+    this.baseVisitor = new ApexParserVisitor();
+    this.metrics = new Map();
+  }
 
-  public visit(ast: ASTNode) {
-    if (!ast) {return;}
+  metrics: Map<string, any>;
+  baseVisitor: any;
 
-    // Métricas de classe
-    if (ast.type === 'class') {
-      const totalLines = ast.endLine - ast.startLine + 1;
-      const totalMethods = ast.children ? ast.children.length : 0;
+  // ----------- VISIT CLASS DECLARATION -----------
+  visitClassDeclaration(ctx: any) {
+    const name = ctx?.identifier?.()?.getText?.() ?? 'UnknownClass';
+    const startLine = ctx.start?.line ?? 0;
+    const endLine = ctx.stop?.line ?? startLine;
+    const totalLines = endLine - startLine + 1;
 
-      this.metrics.set('class', {
-        name: ast.name,
-        totalLines,
-        totalMethods
-      });
-    }
+    this.metrics.set('class', { name, startLine, endLine, totalLines });
+    return this.baseVisitor.visitChildren?.(ctx);
+  }
 
-    // Métricas de métodos
-    if (ast.children && ast.children.length > 0) {
-      const methods = ast.children.map((method) => {
-        const lines = method.endLine - method.startLine + 1;
-        return {
-          name: method.name,
-          lines,
-          startLine: method.startLine,
-          endLine: method.endLine
-        };
-      });
+  // ----------- VISIT METHOD DECLARATION -----------
+  visitMethodDeclaration(ctx: any) {
+    const name = ctx?.identifier?.()?.getText?.() ?? 'UnknownMethod';
+    const startLine = ctx.start?.line ?? 0;
+    const endLine = ctx.stop?.line ?? startLine;
+    const lines = endLine - startLine + 1;
 
-      this.metrics.set('methods', methods);
+    const existing = this.metrics.get('methods') || [];
+    existing.push({ name, startLine, endLine, lines });
+    this.metrics.set('methods', existing);
+
+    return this.baseVisitor.visitChildren?.(ctx);
+  }
+
+  // ----------- VISIT ROOT NODE -----------
+  visit(tree: any) {
+    if (this.baseVisitor.visit) {
+      this.baseVisitor.visit(tree);
     }
   }
 
-  /**
-   * Retorna as métricas coletadas
-   */
-  public getMetrics(): Map<string, any> {
+  // ----------- MÉTRICAS -----------
+  getMetrics() {
     return this.metrics;
   }
 }

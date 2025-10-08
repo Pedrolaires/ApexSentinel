@@ -1,13 +1,24 @@
-import { CharStreams, CommonTokenStream } from "antlr4ts";
-import { apexLexer } from "./parser/apexLexer";
-import { apexParser } from "./parser/apexParser";
-import { ParseTree } from "antlr4ts/tree/ParseTree";
+// src/parsing/parseAdapter.ts
+import antlr4 from 'antlr4';
+import { ApexLexer } from 'apex-parser/lib/ApexLexer';
+import { ApexParser } from 'apex-parser/lib/ApexParser';
 
-export function parseApexCode(code: string): ParseTree {
-  const inputStream = CharStreams.fromString(code);
-  const lexer = new apexLexer(inputStream);
-  const tokenStream = new CommonTokenStream(lexer);
-  const parser = new apexParser(tokenStream);
+export class ParserAdapter {
+  parse(code: string): any {
+    try {
+      const inputStream = new antlr4.InputStream(code);
+      const lexer = new ApexLexer(inputStream as any);
+      const tokenStream = new antlr4.CommonTokenStream(lexer);
+      const parser = new ApexParser(tokenStream as any);
 
-  return parser.compilationUnit();
+      parser.buildParseTree = true;
+      const tree = parser.compilationUnit();
+
+      console.log('[ApexSentinel][ParserAdapter] Parse bem-sucedido.');
+      return { tree, parser };
+    } catch (err) {
+      console.error('[ApexSentinel][ParserAdapter] Erro no parse:', err);
+      return null;
+    }
+  }
 }
