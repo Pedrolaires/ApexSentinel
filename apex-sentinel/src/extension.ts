@@ -1,5 +1,3 @@
-// src/extension.ts
-
 import * as vscode from 'vscode';
 import { UserInterfaceController } from './ui/userInterfaceController';
 import { CodeActionProvider } from './ui/codeActionProvider';
@@ -10,7 +8,6 @@ export function activate(context: vscode.ExtensionContext) {
 
   const uiController = new UserInterfaceController();
 
-  // --- REGISTRO DE COMANDOS ---
   const analyzeCommand = vscode.commands.registerCommand('apex-sentinel.analyzeFile', async () => {
     try {
       vscode.window.showInformationMessage('Executando análise...');
@@ -26,7 +23,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.env.openExternal(vscode.Uri.parse(url));
   });
 
-  // --- REGISTRO DE EVENTOS (LISTENERS) ---
   const onTypeListener = vscode.workspace.onDidChangeTextDocument(async (event) => {
     if (event.document.languageId === 'apex') {
       await uiController.analyzeDocument(event.document);
@@ -39,8 +35,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  // --- REGISTRO DO PROVEDOR DE AÇÕES RÁPIDAS ---
-  // LOG DE DEPURAÇÃO PARA O REGISTRO
   console.log('[Extension] Preparando para registrar o CodeActionProvider...');
   
   const codeActionProvider = vscode.languages.registerCodeActionsProvider(
@@ -53,13 +47,12 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('[Extension] CodeActionProvider registrado.');
 
-  // Adiciona TUDO ao contexto de subscriptions de uma vez só.
   context.subscriptions.push(
     analyzeCommand,
     openDocCommand,
     onTypeListener,
     onOpenListener,
-    codeActionProvider // A variável contendo o registro do provedor
+    codeActionProvider
   );
 
   console.log('[Extension] Extensão ativada com sucesso.');

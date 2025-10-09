@@ -1,13 +1,7 @@
-// src/parsing/visitors/metricsVisitor.ts
-
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
 import { ClassDeclarationContext, MethodDeclarationContext } from 'apex-parser/lib/ApexParser';
 import { ApexParserVisitor } from 'apex-parser/lib/ApexParserVisitor';
 
-/**
- * MetricVisitor
- * Percorre a Árvore Sintática Abstrata (AST) para coletar métricas de código.
- */
 export class MetricVisitor extends AbstractParseTreeVisitor<any> implements ApexParserVisitor<any> {
   private metrics: Map<string, any> = new Map();
 
@@ -19,13 +13,7 @@ export class MetricVisitor extends AbstractParseTreeVisitor<any> implements Apex
     return null;
   }
 
-  // --- MÉTODOS DE VISITAÇÃO ---
-
-  /**
-   * Chamado quando o visitor encontra a declaração de uma classe.
-   */
   public visitClassDeclaration(ctx: ClassDeclarationContext): any {
-    // CORREÇÃO FINAL: Acessando o nome através da regra 'identifier()'.
     const name = ctx.id;
     const startLine = ctx._start.line;
     const endLine = ctx._stop?.line ?? startLine;
@@ -37,11 +25,7 @@ export class MetricVisitor extends AbstractParseTreeVisitor<any> implements Apex
     return this.visitChildren(ctx);
   }
 
-  /**
-   * Chamado quando o visitor encontra a declaração de um método.
-   */
   public visitMethodDeclaration(ctx: MethodDeclarationContext): any {
-    // CORREÇÃO FINAL: Aplicando o mesmo ajuste para o nome do método.
     const name = ctx.id;
     const startLine = ctx._start.line;
     const endLine = ctx._stop?.line ?? startLine;
