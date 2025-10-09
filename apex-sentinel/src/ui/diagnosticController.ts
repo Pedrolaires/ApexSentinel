@@ -1,51 +1,68 @@
-import * as vscode from 'vscode';
-import { AnalysisResult } from '../analyzer/analysisResult';
+// src/ui/diagnosticController.ts
 
+import * as vscode from 'vscode';
+import { AnalysisResult } from '../analysis/analysisResult';
+
+/**
+ * DiagnosticController
+ * Gerencia a coleção de diagnósticos (problemas) que são exibidos no editor do VS Code.
+ */
 export class DiagnosticController {
+  // Uma coleção de diagnósticos. É como um "quadro de avisos" para problemas de código.
   private collection: vscode.DiagnosticCollection;
 
   constructor() {
+    // Cria a coleção, associando-a ao nome da nossa extensão.
     this.collection = vscode.languages.createDiagnosticCollection('apex-sentinel');
   }
 
-  public updateDiagnostics(uri: vscode.Uri, results: AnalysisResult[]) {
+  /**
+   * Atualiza os diagnósticos para um determinado arquivo.
+   * @param uri O identificador do arquivo.
+   * @param results A lista de problemas encontrados pelo analisador.
+   */
+  public updateDiagnostics(uri: vscode.Uri, results: AnalysisResult[]): void {
+    // Primeiro, limpa os diagnósticos antigos para este arquivo.
+    this.collection.delete(uri);
+
     const diagnostics: vscode.Diagnostic[] = [];
 
+    // Itera sobre cada resultado da análise.
     for (const result of results) {
-      const loc = result.location || { startLine: 1, startCol: 0, endLine: 1, endCol: 0 };
-
-      const startLine = Math.max(0, (loc.startLine ?? 1) - 1);
-      const endLine = Math.max(startLine, (loc.endLine ?? loc.startLine ?? 1) - 1);
-
-      const startCol = Math.max(0, loc.startCol ?? 0);
-      const endCol = Math.max(0, loc.endCol ?? 80);
-
+      // Define o intervalo (range) no código onde o problema foi encontrado.
       const range = new vscode.Range(
-        new vscode.Position(startLine, startCol),
-        new vscode.Position(endLine, endCol)
+        // A linha e coluna no VS Code começam em 0, mas no ANTLR começam em 1.
+        new vscode.Position(result.line - 1, 0),
+        new vscode.Position(result.line - 1, 80) // Pega a linha inteira para simplificar.
       );
 
+      // Mapeia o tipo de problema para uma severidade do VS Code (Erro, Aviso, etc.).
       const severity = this.mapSeverity(result.type);
 
-      const diag = new vscode.Diagnostic(range, result.message, severity);
-      // opcional: adicionar código/ID para referência
-      diag.code = result.type;
-      diagnostics.push(diag);
+      // Cria o objeto de diagnóstico.
+      const diagnostic = new vscode.Diagnostic(range, result.message, severity);
+      diagnostic.code = result.type; // Adiciona um código para o problema (ex: 'LongMethod').
+      diagnostic.source = 'Apex Sentinel'; // Informa a origem do diagnóstico.
+
+      diagnostics.push(diagnostic);
     }
 
+    // Define a nova lista de diagnósticos para o arquivo.
     this.collection.set(uri, diagnostics);
-    console.log(`[ApexSentinel][Diagnostics] Atualizado: ${diagnostics.length} problema(s) no ${uri.fsPath}`);
+    console.log(`[ApexSentinel] Diagnósticos atualizados: ${diagnostics.length} problema(s) em ${uri.fsPath}`);
   }
 
-  public clear(uri: vscode.Uri) {
-    this.collection.delete(uri);
-  }
-
+  /**
+   * Mapeia a severidade do nosso resultado para a severidade do VS Code.
+   */
   private mapSeverity(type: string): vscode.DiagnosticSeverity {
-    if (!type) {return vscode.DiagnosticSeverity.Information;}
-    const t = type.toUpperCase();
-    if (t.includes('ERROR') || t.includes('CRITICAL')) {return vscode.DiagnosticSeverity.Error;}
-    if (t.includes('SMELL') || t.includes('LONG') || t.includes('LARGE') || t.includes('WARN')) {return vscode.DiagnosticSeverity.Warning;}
-    return vscode.DiagnosticSeverity.Information;
+    switch (type.toUpperCase()) {
+      case 'ERROR':
+        return vscode.DiagnosticSeverity.Error;
+      case 'LONG_METHOD': // Exemplo de um tipo de code smell
+        return vscode.DiagnosticSeverity.Warning;
+      default:
+        return vscode.DiagnosticSeverity.Information;
+    }
   }
 }

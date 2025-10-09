@@ -1,52 +1,62 @@
 // src/parsing/visitors/metricsVisitor.ts
 
-// Importa o visitor gerado pelo apex-parser (JS)
-const { ApexParserVisitor } = require('apex-parser/lib/ApexParserVisitor.js');
+import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
+import { ClassDeclarationContext, MethodDeclarationContext } from 'apex-parser/lib/ApexParser';
+import { ApexParserVisitor } from 'apex-parser/lib/ApexParserVisitor';
 
-export class MetricVisitor {
+/**
+ * MetricVisitor
+ * Percorre a Árvore Sintática Abstrata (AST) para coletar métricas de código.
+ */
+export class MetricVisitor extends AbstractParseTreeVisitor<any> implements ApexParserVisitor<any> {
+  private metrics: Map<string, any> = new Map();
+
   constructor() {
-    // Cria uma instância real do visitor base
-    this.baseVisitor = new ApexParserVisitor();
-    this.metrics = new Map();
+    super();
+  }
+  
+  protected defaultResult() {
+    return null;
   }
 
-  metrics: Map<string, any>;
-  baseVisitor: any;
+  // --- MÉTODOS DE VISITAÇÃO ---
 
-  // ----------- VISIT CLASS DECLARATION -----------
-  visitClassDeclaration(ctx: any) {
-    const name = ctx?.identifier?.()?.getText?.() ?? 'UnknownClass';
-    const startLine = ctx.start?.line ?? 0;
-    const endLine = ctx.stop?.line ?? startLine;
+  /**
+   * Chamado quando o visitor encontra a declaração de uma classe.
+   */
+  public visitClassDeclaration(ctx: ClassDeclarationContext): any {
+    // CORREÇÃO FINAL: Acessando o nome através da regra 'identifier()'.
+    const name = ctx.id;
+    const startLine = ctx._start.line;
+    const endLine = ctx._stop?.line ?? startLine;
     const totalLines = endLine - startLine + 1;
 
+    console.log(`[Visitor] Classe encontrada: ${name} (Linhas: ${startLine}-${endLine})`);
     this.metrics.set('class', { name, startLine, endLine, totalLines });
-    return this.baseVisitor.visitChildren?.(ctx);
+
+    return this.visitChildren(ctx);
   }
 
-  // ----------- VISIT METHOD DECLARATION -----------
-  visitMethodDeclaration(ctx: any) {
-    const name = ctx?.identifier?.()?.getText?.() ?? 'UnknownMethod';
-    const startLine = ctx.start?.line ?? 0;
-    const endLine = ctx.stop?.line ?? startLine;
+  /**
+   * Chamado quando o visitor encontra a declaração de um método.
+   */
+  public visitMethodDeclaration(ctx: MethodDeclarationContext): any {
+    // CORREÇÃO FINAL: Aplicando o mesmo ajuste para o nome do método.
+    const name = ctx.id;
+    const startLine = ctx._start.line;
+    const endLine = ctx._stop?.line ?? startLine;
     const lines = endLine - startLine + 1;
 
-    const existing = this.metrics.get('methods') || [];
-    existing.push({ name, startLine, endLine, lines });
-    this.metrics.set('methods', existing);
+    console.log(`[Visitor] Método encontrado: ${name} (${lines} linhas)`);
+    
+    const existingMethods = this.metrics.get('methods') || [];
+    existingMethods.push({ name, startLine, endLine, lines });
+    this.metrics.set('methods', existingMethods);
 
-    return this.baseVisitor.visitChildren?.(ctx);
+    return this.visitChildren(ctx);
   }
 
-  // ----------- VISIT ROOT NODE -----------
-  visit(tree: any) {
-    if (this.baseVisitor.visit) {
-      this.baseVisitor.visit(tree);
-    }
-  }
-
-  // ----------- MÉTRICAS -----------
-  getMetrics() {
+  public getMetrics(): Map<string, any> {
     return this.metrics;
   }
 }

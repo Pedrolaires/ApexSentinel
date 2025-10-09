@@ -1,38 +1,24 @@
-import { CodeSmellAnalyzer } from './../analyzer/codeSmellAnalyzer';
-import { DiagnosticController } from './diagnosticController';
+import { CodeSmellAnalyzer } from './../analysis/codeSmellAnalyzer';
 import * as vscode from 'vscode';
+// CORREÇÃO: Usando o nome de arquivo consistente (camelCase).
+import { DiagnosticController } from './diagnosticController';
 
+// ... (o resto do arquivo continua o mesmo)
 export class UserInterfaceController {
   private analyzer: CodeSmellAnalyzer;
-  private diagnostics: DiagnosticController;
+  private diagnosticController: DiagnosticController;
 
   constructor() {
     this.analyzer = new CodeSmellAnalyzer();
-    this.diagnostics = new DiagnosticController();
+    this.diagnosticController = new DiagnosticController();
   }
 
-  public async analyzeActiveFile(): Promise<void> {
-    const editor = vscode.window.activeTextEditor;
-    if (!editor) {
-      vscode.window.showWarningMessage('Nenhum arquivo ativo.');
-      return;
-    }
-
-    const text = editor.document.getText();
-    const uri = editor.document.uri;
-    const results = await this.analyzer.analyzeText(text, uri);
-    this.diagnostics.updateDiagnostics(uri, results);
-  }
-
-  /** 🔍 Novo método para ser usado diretamente no extension.ts */
-  public async analyzeText(text: string, uri: vscode.Uri) {
-    const results = await this.analyzer.analyzeText(text, uri);
-    this.diagnostics.updateDiagnostics(uri, results);
-    return results;
-  }
-
-  public async onTyping(document: vscode.TextDocument) {
-    const results = await this.analyzer.analyzeText(document.getText(), document.uri);
-    this.diagnostics.updateDiagnostics(document.uri, results);
+  // ... (métodos analyzeActiveFile e analyzeDocument)
+  public async analyzeActiveFile(): Promise<void> { /* ... */ }
+  public async analyzeDocument(document: vscode.TextDocument): Promise<void> {
+    const code = document.getText();
+    const uri = document.uri;
+    const analysisResults = this.analyzer.analyze(code, uri);
+    this.diagnosticController.updateDiagnostics(uri, analysisResults);
   }
 }

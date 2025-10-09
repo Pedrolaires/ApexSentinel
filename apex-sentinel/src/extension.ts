@@ -1,60 +1,71 @@
+// src/extension.ts
+
 import * as vscode from 'vscode';
 import { UserInterfaceController } from './ui/userInterfaceController';
+import { CodeActionProvider } from './ui/codeActionProvider';
 
-export async function activate(context: vscode.ExtensionContext) {
-  console.log('[ApexSentinel] activate start');
+export function activate(context: vscode.ExtensionContext) {
+  console.log('[Extension] A extensão "Apex Sentinel" está sendo ativada.');
   vscode.window.showInformationMessage('🔍 Apex Sentinel carregando...');
 
   const uiController = new UserInterfaceController();
 
+  // --- REGISTRO DE COMANDOS ---
   const analyzeCommand = vscode.commands.registerCommand('apex-sentinel.analyzeFile', async () => {
     try {
-      console.log('[ApexSentinel] command: analyzeFile triggered');
       vscode.window.showInformationMessage('Executando análise...');
-      const res = await uiController.analyzeActiveFile();
-      console.log('[ApexSentinel] analyzeActiveFile returned:', res);
-    } catch (err) {
-      console.error('[ApexSentinel] analyzeFile error:', err);
-      vscode.window.showErrorMessage('Erro na análise: ' + (err && err.message));
+      await uiController.analyzeActiveFile();
+      vscode.window.showInformationMessage('Análise concluída!');
+    } catch (err: any) {
+      console.error('[Extension] Erro ao executar analyzeFile:', err);
+      vscode.window.showErrorMessage('Ocorreu um erro durante a análise: ' + err.message);
     }
   });
 
-  // Comando manual para debugar facilmente
-  const analyzeNow = vscode.commands.registerCommand('apex-sentinel.analyzeNow', async () => {
-    try {
-      console.log('[ApexSentinel] command: analyzeNow triggered');
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        vscode.window.showWarningMessage('Abra um arquivo Apex antes de executar.');
-        return;
-      }
-      const code = editor.document.getText();
-      const res = await uiController.analyzeText(code, editor.document.uri);
-      console.log('[ApexSentinel] analyzeNow results:', res);
-      vscode.window.showInformationMessage(`Apex Sentinel: ${res.length} item(s) retornado(s).`);
-    } catch (err) {
-      console.error('[ApexSentinel] analyzeNow error:', err);
-      vscode.window.showErrorMessage('Erro: ' + (err && err.message));
-    }
+  const openDocCommand = vscode.commands.registerCommand('apex-sentinel.openRuleDocumentation', (url: string) => {
+    vscode.env.openExternal(vscode.Uri.parse(url));
   });
 
+  // --- REGISTRO DE EVENTOS (LISTENERS) ---
   const onTypeListener = vscode.workspace.onDidChangeTextDocument(async (event) => {
-    try {
-      if (event.document.languageId === 'apex') {
-        console.log('[ApexSentinel] Evento onDidChangeTextDocument disparado para', event.document.fileName);
-        await uiController.onTyping(event.document);
-      }
-    } catch (err) {
-      console.error('[ApexSentinel] onTypeListener error:', err);
+    if (event.document.languageId === 'apex') {
+      await uiController.analyzeDocument(event.document);
+    }
+  });
+  
+  const onOpenListener = vscode.workspace.onDidOpenTextDocument(async (document) => {
+    if (document.languageId === 'apex') {
+      await uiController.analyzeDocument(document);
     }
   });
 
-  context.subscriptions.push(analyzeCommand, analyzeNow, onTypeListener);
+  // --- REGISTRO DO PROVEDOR DE AÇÕES RÁPIDAS ---
+  // LOG DE DEPURAÇÃO PARA O REGISTRO
+  console.log('[Extension] Preparando para registrar o CodeActionProvider...');
+  
+  const codeActionProvider = vscode.languages.registerCodeActionsProvider(
+    { language: 'apex', scheme: 'file' },
+    new CodeActionProvider(),
+    {
+      providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
+    }
+  );
 
-  console.log('[ApexSentinel] activate end');
-  vscode.window.showInformationMessage('✅ Apex Sentinel ativado com sucesso.');
+  console.log('[Extension] CodeActionProvider registrado.');
+
+  // Adiciona TUDO ao contexto de subscriptions de uma vez só.
+  context.subscriptions.push(
+    analyzeCommand,
+    openDocCommand,
+    onTypeListener,
+    onOpenListener,
+    codeActionProvider // A variável contendo o registro do provedor
+  );
+
+  console.log('[Extension] Extensão ativada com sucesso.');
+  vscode.window.showInformationMessage('✅ Apex Sentinel está ativo.');
 }
 
 export function deactivate() {
-  console.log('[ApexSentinel] deactivate');
+  console.log('[Extension] A extensão "Apex Sentinel" foi desativada.');
 }

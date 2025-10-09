@@ -34,7 +34,22 @@
         ],
         "configuration": "./language-configuration.json"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Apex Sentinel",
+      "properties": {
+        "apex-sentinel.rules.longMethod.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Habilita ou desabilita a regra que detecta métodos longos."
+        },
+        "apex-sentinel.rules.longMethod.threshold": {
+          "type": "number",
+          "default": 20,
+          "description": "Define o número de linhas a partir do qual um método é considerado 'longo'."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
