@@ -24,22 +24,22 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     this.uiController.refreshSidebarConfig();
   }
+  
+  public updateOpenFiles(files: { name: string, score: number }[]): void {
+    if (this.view) {
+      this.view.webview.postMessage({ command: 'updateOpenFiles', files: files });
+    }
+  }
 
   public updateAnalysisResults(results: AnalysisResult[]): void {
     if (this.view) {
-      this.view.webview.postMessage({
-        command: 'updateAnalysis',
-        results: results,
-      });
+      this.view.webview.postMessage({ command: 'updateAnalysis', results: results });
     }
   }
 
   public updateConfig(config: FullConfig): void {
     if (this.view) {
-      this.view.webview.postMessage({
-        command: 'loadConfig',
-        config: config,
-      });
+      this.view.webview.postMessage({ command: 'loadConfig', config: config });
     }
   }
 
@@ -53,22 +53,17 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <title>Apex Sentinel</title>
           <style>
               body { font-family: sans-serif; padding: 0 10px; color: var(--vscode-foreground); }
+              .file-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+              .file-header { font-weight: bold; border-bottom: 1px solid var(--vscode-editorWidget-border); }
+              .file-score { font-weight: bold; }
+              .score-good { color: var(--vscode-terminal-ansiGreen); }
+              .score-warn { color: var(--vscode-terminal-ansiYellow); }
+              .score-bad { color: var(--vscode-terminal-ansiRed); }
               table { width: 100%; border-collapse: collapse; margin-top: 10px; }
               th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--vscode-editorWidget-border); }
               th { font-weight: bold; }
               td:last-child, th:last-child { text-align: center; }
               input[type="number"] { width: 100%; box-sizing: border-box; padding: 4px; background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border); color: var(--vscode-input-foreground); border-radius: 2px; }
-              
-              /* Adicionado: Remove as setas do campo de número */
-              input[type=number]::-webkit-outer-spin-button,
-              input[type=number]::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
-              }
-              input[type=number] {
-                -moz-appearance: textfield;
-              }
-
               button { margin-top: 15px; padding: 5px 10px; background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 2px; cursor: pointer; }
               button:hover { background: var(--vscode-button-hoverBackground); }
               .issue { padding: 10px; border: 1px solid var(--vscode-editorWidget-border); border-radius: 4px; margin-bottom: 10px; }
@@ -77,15 +72,22 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           </style>
       </head>
       <body>
+          <h1>Arquivos Abertos</h1>
+          <div class="file-item file-header">
+              <span>Nome</span>
+              <span>Pontuação</span>
+          </div>
+          <div id="open-files-list">
+            <p>Nenhum arquivo Apex aberto.</p>
+          </div>
+
+          <hr>
+
           <h1>Configurações de Regras</h1>
           <form id="config-form">
               <table>
                   <thead>
-                      <tr>
-                          <th>Regra</th>
-                          <th>Threshold</th>
-                          <th>Ativo</th>
-                      </tr>
+                      <tr><th>Regra</th><th>Threshold</th><th>Ativo</th></tr>
                   </thead>
                   <tbody>
                       <tr>
@@ -100,15 +102,16 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
           <hr>
           
-          <h1>Análise do Arquivo</h1>
+          <h1>Análise do Arquivo Ativo</h1>
           <div id="analysis-results">
-            <p>Aguardando análise...</p>
+            <p>Nenhum arquivo ativo.</p>
           </div>
 
           <script>
               const vscode = acquireVsCodeApi();
               const form = document.getElementById('config-form');
               const analysisDiv = document.getElementById('analysis-results');
+              const openFilesDiv = document.getElementById('open-files-list');
 
               window.addEventListener('message', event => {
                   const message = event.data;
@@ -119,16 +122,34 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                   }
                   if (message.command === 'updateAnalysis') {
                       if (message.results.length === 0) {
-                        analysisDiv.innerHTML = '<p>Nenhum problema encontrado. Ótimo trabalho!</p>';
+                        analysisDiv.innerHTML = '<p>Nenhum problema encontrado.</p>';
                         return;
                       }
                       analysisDiv.innerHTML = message.results.map(r => \`
-                        <div class="rule">
+                        <div class="issue">
                           <h4>\${r.type}</h4>
                           <p>\${r.message}</p>
                           <p><small>Linha: \${r.line}</small></p>
                         </div>
                       \`).join('');
+                  }
+
+                  if (message.command === 'updateOpenFiles') {
+                      if (message.files.length === 0) {
+                          openFilesDiv.innerHTML = '<p>Nenhum arquivo Apex aberto.</p>';
+                          return;
+                      }
+                      openFilesDiv.innerHTML = message.files.map(file => {
+                          let scoreClass = 'score-good';
+                          if (file.score < 100 && file.score >= 70) scoreClass = 'score-warn';
+                          if (file.score < 70) scoreClass = 'score-bad';
+                          return \`
+                              <div class="file-item">
+                                  <span>\${file.name}</span>
+                                  <span class="file-score \${scoreClass}">\${file.score}</span>
+                              </div>
+                          \`;
+                      }).join('');
                   }
               });
 

@@ -1,4 +1,3 @@
-// scripts/patch-antlr-output.js
 const fs = require('fs');
 const path = require('path');
 
@@ -12,19 +11,13 @@ if (!fs.existsSync(lexerFile)) {
 
 let text = fs.readFileSync(lexerFile, 'utf8');
 
-// 1) substituir chamadas Java Character.* por chamadas this.* e adaptar a passagem de params
-// Ex: Character.isJavaIdentifierStart(_input.LA(-1))  --> this.isJavaIdentifierStart(_input.LA(-1))
 text = text.replace(/Character\.isJavaIdentifierStart\(/g, 'this.isJavaIdentifierStart(');
 text = text.replace(/Character\.isJavaIdentifierPart\(/g, 'this.isJavaIdentifierPart(');
 
-// 2) substituir chamadas Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1))
-//    por this.toCodePoint(_input.LA(-2), _input.LA(-1))
 text = text.replace(/Character\.toCodePoint\s*\(\s*\(char\)\s*_input\.LA\(-2\)\s*,\s*\(char\)\s*_input\.LA\(-1\)\s*\)/g, 'this.toCodePoint(_input.LA(-2), _input.LA(-1))');
 
-// 3) se existir outro formato de cast sem espaços:
 text = text.replace(/Character\.toCodePoint\(\(char\)_input\.LA\(-2\),\(char\)_input\.LA\(-1\)\)/g, 'this.toCodePoint(_input.LA(-2), _input.LA(-1))');
 
-// 4) garantir que inserimos os helpers apenas uma vez — procura por um marcador
 if (!/\/\/ ANTLR_TS_HELPERS_MARKER/.test(text)) {
   const helpers = `
 
@@ -58,19 +51,15 @@ private isJavaIdentifierPart(ch: number): boolean {
   return true;
 }
 `;
-  // inserir helpers antes do final da classe: procurar pelo fechamento da classe '}' no final do arquivo
-  // Coloca antes do último '}\n' (assume que é fechamento da classe)
   const lastBraceIndex = text.lastIndexOf('}\n');
   if (lastBraceIndex !== -1) {
     const before = text.slice(0, lastBraceIndex);
     const after = text.slice(lastBraceIndex);
     text = before + helpers + after;
   } else {
-    // fallback: append
     text = text + helpers;
   }
 }
 
-// gravar arquivo
 fs.writeFileSync(lexerFile, text, 'utf8');
 console.log('patch aplicado em', lexerFile);

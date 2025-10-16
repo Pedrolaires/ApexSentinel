@@ -20,7 +20,7 @@ export class MetricVisitor
   }
 
   public visitClassDeclaration(ctx: ClassDeclarationContext): any {
-    const name = ctx.id;
+    const name = ctx.id().Identifier()?.text ?? 'UnknownClass';
     const startLine = ctx._start.line;
     const endLine = ctx._stop?.line ?? startLine;
     const totalLines = endLine - startLine + 1;
@@ -31,7 +31,7 @@ export class MetricVisitor
   }
 
   public visitMethodDeclaration(ctx: MethodDeclarationContext): any {
-    const name = ctx.id;
+    const name = ctx.id().Identifier()?.text ?? 'UnknownMethod';
     const startLine = ctx._start.line;
     const endLine = ctx._stop?.line ?? startLine;
     const lines = endLine - startLine + 1;

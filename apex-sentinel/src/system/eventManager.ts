@@ -20,11 +20,19 @@ export class EventManager {
     const onOpenListener = vscode.workspace.onDidOpenTextDocument(
       async (document) => {
         if (document.languageId === 'apex') {
-          await this.uiController.analyzeDocument(document);
+          this.uiController.handleFileOpen(document);
         }
       }
     );
 
-    context.subscriptions.push(onTypeListener, onOpenListener);
+    const onCloseListener = vscode.workspace.onDidCloseTextDocument(
+      async (document) => {
+        if (document.languageId === 'apex') {
+          this.uiController.handleFileClose(document);
+        }
+      }
+    );
+
+    context.subscriptions.push(onTypeListener, onOpenListener, onCloseListener);
   }
 }
