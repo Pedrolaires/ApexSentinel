@@ -17,7 +17,7 @@ export class DiagnosticController {
     for (const result of results) {
       const range = new vscode.Range(
         new vscode.Position(result.line - 1, 0),
-        new vscode.Position(result.line - 1, 80) // Pega a linha inteira para simplificar.
+        new vscode.Position(result.line - 1, 80)
       );
 
       const severity = this.mapSeverity(result.type);

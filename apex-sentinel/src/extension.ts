@@ -1,64 +1,29 @@
 import * as vscode from 'vscode';
 import { UserInterfaceController } from './ui/userInterfaceController';
-import { CodeActionProvider } from './ui/codeActionProvider';
+import { CommandManager } from './system/commandManager';
+import { ProviderManager } from './system/providerManager';
+import { EventManager } from './system/eventManager';
+
+let uiController: UserInterfaceController;
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('[Extension] A extensão "Apex Sentinel" está sendo ativada.');
-  vscode.window.showInformationMessage('🔍 Apex Sentinel carregando...');
+  // O context é passado aqui, pois o UIController pode precisar dele para
+  // criar serviços que acessam o estado da extensão ou seus arquivos.
+  uiController = new UserInterfaceController(context);
 
-  const uiController = new UserInterfaceController();
+  // Cada gerenciador é criado e sua função de registro é chamada.
+  const commandManager = new CommandManager(uiController);
+  commandManager.registerCommands(context);
 
-  const analyzeCommand = vscode.commands.registerCommand('apex-sentinel.analyzeFile', async () => {
-    try {
-      vscode.window.showInformationMessage('Executando análise...');
-      await uiController.analyzeActiveFile();
-      vscode.window.showInformationMessage('Análise concluída!');
-    } catch (err: any) {
-      console.error('[Extension] Erro ao executar analyzeFile:', err);
-      vscode.window.showErrorMessage('Ocorreu um erro durante a análise: ' + err.message);
-    }
-  });
+  const providerManager = new ProviderManager(uiController);
+  providerManager.registerProviders(context);
 
-  const openDocCommand = vscode.commands.registerCommand('apex-sentinel.openRuleDocumentation', (url: string) => {
-    vscode.env.openExternal(vscode.Uri.parse(url));
-  });
-
-  const onTypeListener = vscode.workspace.onDidChangeTextDocument(async (event) => {
-    if (event.document.languageId === 'apex') {
-      await uiController.analyzeDocument(event.document);
-    }
-  });
-  
-  const onOpenListener = vscode.workspace.onDidOpenTextDocument(async (document) => {
-    if (document.languageId === 'apex') {
-      await uiController.analyzeDocument(document);
-    }
-  });
-
-  console.log('[Extension] Preparando para registrar o CodeActionProvider...');
-  
-  const codeActionProvider = vscode.languages.registerCodeActionsProvider(
-    { language: 'apex', scheme: 'file' },
-    new CodeActionProvider(),
-    {
-      providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
-    }
-  );
-
-  console.log('[Extension] CodeActionProvider registrado.');
-
-  context.subscriptions.push(
-    analyzeCommand,
-    openDocCommand,
-    onTypeListener,
-    onOpenListener,
-    codeActionProvider
-  );
-
-  console.log('[Extension] Extensão ativada com sucesso.');
-  vscode.window.showInformationMessage('✅ Apex Sentinel está ativo.');
+  const eventManager = new EventManager(uiController);
+  eventManager.registerEvents(context);
 }
 
 export function deactivate() {
-  console.log('[Extension] A extensão "Apex Sentinel" foi desativada.');
+  if (uiController) {
+    uiController.dispose();
+  }
 }

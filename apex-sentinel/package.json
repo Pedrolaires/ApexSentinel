@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "publisher": "pedro Aires",
   "engines": {
-    "vscode": "^1.104.0"
+    "vscode": "^1.85.0"
   },
   "categories": [
     "Other"
@@ -49,6 +49,24 @@
           "description": "Define o número de linhas a partir do qual um método é considerado 'longo'."
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "apex-sentinel-explorer",
+          "title": "Apex Sentinel",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "apex-sentinel-explorer": [
+        {
+          "id": "apex-sentinel-sidebar",
+          "name": "Análise de Qualidade",
+          "type": "webview"
+        }
+      ]
     }
   },
   "scripts": {
