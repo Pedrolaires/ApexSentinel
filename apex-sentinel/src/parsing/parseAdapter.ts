@@ -21,11 +21,9 @@ export class ParserAdapter {
 
       const tree = parser.compilationUnit();
 
-      console.log('[ApexSentinel] Árvore sintática gerada com sucesso.');
       return { tree, parser };
 
     } catch (error) {
-      console.error('[ApexSentinel] Erro crítico durante o parse:', error);
       return null;
     }
   }

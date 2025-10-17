@@ -30,7 +30,6 @@ export class DiagnosticController {
     }
 
     this.collection.set(uri, diagnostics);
-    console.log(`[ApexSentinel] Diagnósticos atualizados: ${diagnostics.length} problema(s) em ${uri.fsPath}`);
   }
 
 
