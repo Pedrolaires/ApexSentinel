@@ -40,7 +40,7 @@ export class UserInterfaceController {
     const filePath = document.uri.fsPath;
     if (!this.openFileScores.has(filePath)) {
       this.openFileScores.set(filePath, 100);
-      this.updateSidebarOpenFiles();
+      this.refreshSidebarOpenFiles();
       this.analyzeDocument(document);
     }
   }
@@ -49,11 +49,11 @@ export class UserInterfaceController {
     const filePath = document.uri.fsPath;
     if (this.openFileScores.has(filePath)) {
       this.openFileScores.delete(filePath);
-      this.updateSidebarOpenFiles();
+      this.refreshSidebarOpenFiles();
     }
   }
 
-  private updateSidebarOpenFiles(): void {
+  public refreshSidebarOpenFiles(): void {
     const sortedFiles = Array.from(this.openFileScores.entries())
       .sort(([, scoreA], [, scoreB]) => scoreA - scoreB)
       .map(([filePath, score]) => ({
@@ -75,10 +75,13 @@ export class UserInterfaceController {
 
     const score = this.calculateScore(analysisResults);
     this.openFileScores.set(uri.fsPath, score);
-    this.updateSidebarOpenFiles();
 
+    // Atualiza diagnósticos e barra de status
     this.diagnosticController.updateDiagnostics(uri, analysisResults);
     this.updateStatusBar(analysisResults);
+
+    this.refreshSidebarConfig();
+    this.refreshSidebarOpenFiles();
     this.sidebarProvider.updateAnalysisResults(analysisResults);
   }
   
@@ -89,6 +92,7 @@ export class UserInterfaceController {
   
   public async saveConfiguration(newConfig: FullConfig): Promise<void> {
     this.configManager.saveConfig(newConfig);
+    await this.analyzeActiveFile();
   }
 
   private calculateScore(results: AnalysisResult[]): number {
@@ -111,6 +115,33 @@ export class UserInterfaceController {
     }
   }
 
+  public updateStatusBarForActiveFile(document: vscode.TextDocument | undefined): void {
+    if (!document || document.languageId !== 'apex') {
+      this.statusBarItem.text = '$(check) Apex Sentinel';
+      this.statusBarItem.tooltip = 'Nenhum arquivo Apex ativo.';
+      this.statusBarItem.backgroundColor = undefined;
+      return;
+    }
+
+    const filePath = document.uri.fsPath;
+    const score = this.openFileScores.get(filePath) ?? 100;
+
+    if (score === 100) {
+      this.statusBarItem.text = `$(check) Apex Sentinel: 100`;
+      this.statusBarItem.tooltip = 'Qualidade do código: Excelente!';
+      this.statusBarItem.backgroundColor = undefined;
+    } else {
+      const config = vscode.workspace.getConfiguration('apex-sentinel');
+      const penaltyPoints = config.get<number>('scoring.penaltyPoints', 10);
+      const estimatedProblems = Math.round((100 - score) / penaltyPoints);
+      const plural = estimatedProblems !== 1 ? 's' : '';
+
+      this.statusBarItem.text = `$(warning) Apex Sentinel: ${score}`;
+      this.statusBarItem.tooltip = `Qualidade do código: ${score} (${estimatedProblems} problema${plural} estimado${plural})`;
+      this.statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
+    }
+  }
+
   public async analyzeActiveFile(): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
@@ -118,6 +149,8 @@ export class UserInterfaceController {
     } else {
       this.updateStatusBar([]);
       this.sidebarProvider.updateAnalysisResults([]);
+      this.refreshSidebarConfig();
+      this.refreshSidebarOpenFiles();
     }
   }
   

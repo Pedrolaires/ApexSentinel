@@ -33,6 +33,21 @@ export class EventManager {
       }
     );
 
-    context.subscriptions.push(onTypeListener, onOpenListener, onCloseListener);
+    const onChangeActiveEditorListener = vscode.window.onDidChangeActiveTextEditor(
+      async (editor) => {
+        if (editor && editor.document.languageId === 'apex') {
+          this.uiController.updateStatusBarForActiveFile(editor.document);
+        } else {
+          this.uiController.updateStatusBarForActiveFile(undefined);
+        }
+      }
+    );
+
+    context.subscriptions.push(
+        onTypeListener,
+        onOpenListener,
+        onCloseListener,
+        onChangeActiveEditorListener
+    );
   }
 }

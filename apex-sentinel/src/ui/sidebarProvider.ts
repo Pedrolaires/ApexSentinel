@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { AnalysisResult } from '../analysis/analysisResult';
 import { FullConfig } from '../analysis/config/configurationManager';
 import { UserInterfaceController } from './userInterfaceController';
+import * as path from 'path';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
@@ -20,9 +21,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       if (data.command === 'saveConfig') {
         await this.uiController.saveConfiguration(data.config);
       }
+      if (data.command === 'ready') {
+        this.uiController.refreshSidebarConfig();
+        this.uiController.refreshSidebarOpenFiles();
+      }
     });
-
-    this.uiController.refreshSidebarConfig();
   }
   
   public updateOpenFiles(files: { name: string, score: number }[]): void {
@@ -52,6 +55,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Apex Sentinel</title>
           <style>
+              /* Seus estilos CSS aqui */
               body { font-family: sans-serif; padding: 0 10px; color: var(--vscode-foreground); }
               .file-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
               .file-header { font-weight: bold; border-bottom: 1px solid var(--vscode-editorWidget-border); }
@@ -78,7 +82,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
               <span>Pontuação</span>
           </div>
           <div id="open-files-list">
-            <p>Nenhum arquivo Apex aberto.</p>
+            <p>Carregando...</p>
           </div>
 
           <hr>
@@ -112,6 +116,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
               const form = document.getElementById('config-form');
               const analysisDiv = document.getElementById('analysis-results');
               const openFilesDiv = document.getElementById('open-files-list');
+
+              // CORREÇÃO: Envia a mensagem 'ready' quando o script carregar
+              window.addEventListener('load', () => {
+                vscode.postMessage({ command: 'ready' });
+              });
 
               window.addEventListener('message', event => {
                   const message = event.data;
