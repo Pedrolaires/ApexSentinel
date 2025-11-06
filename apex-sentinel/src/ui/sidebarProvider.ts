@@ -1,8 +1,15 @@
 import * as vscode from 'vscode';
-import { AnalysisResult } from '../analysis/analysisResult';
 import { FullConfig } from '../analysis/config/configurationManager';
 import { UserInterfaceController } from './userInterfaceController';
 import * as path from 'path';
+
+interface DebugMetricsData {
+  className: string;
+  nom: number;
+  noa: number;
+  wmc: number;
+  methods: Array<{ name: string; lines: number; nop: number; cc: number }>;
+}
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
@@ -27,16 +34,33 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       }
     });
   }
-  
+
   public updateOpenFiles(files: { name: string, score: number }[]): void {
     if (this.view) {
       this.view.webview.postMessage({ command: 'updateOpenFiles', files: files });
     }
   }
 
-  public updateAnalysisResults(results: AnalysisResult[]): void {
+  public updateDebugMetrics(metrics: Map<string, any> | undefined): void {
     if (this.view) {
-      this.view.webview.postMessage({ command: 'updateAnalysis', results: results });
+      let dataToSend: DebugMetricsData | null = null;
+      if (metrics) {
+        const classData = metrics.get('class') || {};
+        const methodData = metrics.get('methods') || [];
+        dataToSend = {
+          className: classData.name || 'N/A',
+          nom: classData.nom || 0,
+          noa: classData.noa || 0,
+          wmc: classData.wmc || 0,
+          methods: methodData.map((m: any) => ({
+            name: m.name || 'N/A',
+            lines: m.lines || 0,
+            nop: m.nop || 0,
+            cc: m.cc || 0
+          }))
+        };
+      }
+      this.view.webview.postMessage({ command: 'updateDebugMetrics', metrics: dataToSend });
     }
   }
 
@@ -55,23 +79,25 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Apex Sentinel</title>
           <style>
-              /* Seus estilos CSS aqui */
-              body { font-family: sans-serif; padding: 0 10px; color: var(--vscode-foreground); }
-              .file-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
-              .file-header { font-weight: bold; border-bottom: 1px solid var(--vscode-editorWidget-border); }
-              .file-score { font-weight: bold; }
+              body { font-family: sans-serif; padding: 0 10px; color: var(--vscode-foreground); font-size: 0.9em; }
+              .file-item, .metric-item { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+              .file-header, .metric-header { font-weight: bold; border-bottom: 1px solid var(--vscode-editorWidget-border); }
+              .file-score, .metric-value { font-weight: bold; }
               .score-good { color: var(--vscode-terminal-ansiGreen); }
               .score-warn { color: var(--vscode-terminal-ansiYellow); }
               .score-bad { color: var(--vscode-terminal-ansiRed); }
               table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-              th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--vscode-editorWidget-border); }
+              th, td { padding: 8px; text-align: left; border-bottom: 1px solid var(--vscode-editorWidget-border); vertical-align: top; }
               th { font-weight: bold; }
               td:last-child, th:last-child { text-align: center; }
-              input[type="number"] { width: 100%; box-sizing: border-box; padding: 4px; background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border); color: var(--vscode-input-foreground); border-radius: 2px; }
+              input[type="number"], input[type="text"] { width: 100%; box-sizing: border-box; padding: 4px; background: var(--vscode-input-background); border: 1px solid var(--vscode-input-border); color: var(--vscode-input-foreground); border-radius: 2px; }
+              input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+              input[type=number] { -moz-appearance: textfield; }
+              label.threshold-label { font-size: 0.8em; margin-top: 5px; display: block; }
               button { margin-top: 15px; padding: 5px 10px; background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 2px; cursor: pointer; }
               button:hover { background: var(--vscode-button-hoverBackground); }
-              .issue { padding: 10px; border: 1px solid var(--vscode-editorWidget-border); border-radius: 4px; margin-bottom: 10px; }
-              #analysis-results { margin-top: 20px; }
+              .method-details { margin-left: 15px; font-size: 0.9em; border-left: 2px solid var(--vscode-editorWidget-border); padding-left: 10px; margin-top: 5px; margin-bottom: 10px;}
+              #debug-metrics { margin-top: 20px; }
               hr { border: 1px solid var(--vscode-editorWidget-border); margin: 20px 0; }
           </style>
       </head>
@@ -90,14 +116,37 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <h1>Configurações de Regras</h1>
           <form id="config-form">
               <table>
-                  <thead>
-                      <tr><th>Regra</th><th>Threshold</th><th>Ativo</th></tr>
+                   <thead>
+                      <tr>
+                          <th>Regra</th>
+                          <th>Threshold(s)</th>
+                          <th>Ativo</th>
+                      </tr>
                   </thead>
                   <tbody>
                       <tr>
                           <td>Método Longo</td>
-                          <td><input type="number" id="longMethod-threshold" min="1"></td>
+                          <td>
+                            <label class="threshold-label">Linhas (LOC):</label>
+                            <input type="number" id="longMethod-threshold" min="1" placeholder="Ex: 20">
+                            <label class="threshold-label">Parâmetros (NOP):</label>
+                            <input type="number" id="longMethod-nopThreshold" min="0" placeholder="Ex: 5">
+                            <label class="threshold-label">Complexidade (CC):</label>
+                            <input type="number" id="longMethod-ccThreshold" min="1" placeholder="Ex: 10">
+                          </td>
                           <td><input type="checkbox" id="longMethod-enabled"></td>
+                      </tr>
+                      <tr>
+                          <td>God Class</td>
+                           <td>
+                            <label class="threshold-label">Métodos (NOM):</label>
+                            <input type="number" id="godClass-nomThreshold" min="1" placeholder="Ex: 15">
+                            <label class="threshold-label">Atributos (NOA):</label>
+                            <input type="number" id="godClass-noaThreshold" min="1" placeholder="Ex: 10">
+                            <label class="threshold-label">Complexidade Total (WMC):</label>
+                            <input type="number" id="godClass-wmcThreshold" min="1" placeholder="Ex: 47">
+                          </td>
+                          <td><input type="checkbox" id="godClass-enabled"></td>
                       </tr>
                   </tbody>
               </table>
@@ -105,42 +154,37 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           </form>
 
           <hr>
-          
-          <h1>Análise do Arquivo Ativo</h1>
-          <div id="analysis-results">
-            <p>Nenhum arquivo ativo.</p>
+
+          <h1>Debug Métricas</h1>
+          <div id="debug-metrics">
+            <p>Nenhum arquivo ativo ou análise pendente.</p>
           </div>
 
           <script>
               const vscode = acquireVsCodeApi();
               const form = document.getElementById('config-form');
-              const analysisDiv = document.getElementById('analysis-results');
+              const debugDiv = document.getElementById('debug-metrics'); // Div para debug
               const openFilesDiv = document.getElementById('open-files-list');
 
-              // CORREÇÃO: Envia a mensagem 'ready' quando o script carregar
-              window.addEventListener('load', () => {
-                vscode.postMessage({ command: 'ready' });
-              });
+              window.addEventListener('load', () => { vscode.postMessage({ command: 'ready' }); });
 
               window.addEventListener('message', event => {
                   const message = event.data;
+
                   if (message.command === 'loadConfig') {
-                      const longMethod = message.config.rules.longMethod || { enabled: true, threshold: 20 };
+                      const rules = message.config.rules;
+                      // Long Method
+                      const longMethod = rules.longMethod || { enabled: true, threshold: 20, nopThreshold: 5, ccThreshold: 10 };
                       document.getElementById('longMethod-enabled').checked = longMethod.enabled;
                       document.getElementById('longMethod-threshold').value = longMethod.threshold;
-                  }
-                  if (message.command === 'updateAnalysis') {
-                      if (message.results.length === 0) {
-                        analysisDiv.innerHTML = '<p>Nenhum problema encontrado.</p>';
-                        return;
-                      }
-                      analysisDiv.innerHTML = message.results.map(r => \`
-                        <div class="issue">
-                          <h4>\${r.type}</h4>
-                          <p>\${r.message}</p>
-                          <p><small>Linha: \${r.line}</small></p>
-                        </div>
-                      \`).join('');
+                      document.getElementById('longMethod-nopThreshold').value = longMethod.nopThreshold;
+                      document.getElementById('longMethod-ccThreshold').value = longMethod.ccThreshold;
+                      // God Class
+                      const godClass = rules.godClass || { enabled: true, nomThreshold: 15, noaThreshold: 10, wmcThreshold: 47 };
+                      document.getElementById('godClass-enabled').checked = godClass.enabled;
+                      document.getElementById('godClass-nomThreshold').value = godClass.nomThreshold;
+                      document.getElementById('godClass-noaThreshold').value = godClass.noaThreshold;
+                      document.getElementById('godClass-wmcThreshold').value = godClass.wmcThreshold;
                   }
 
                   if (message.command === 'updateOpenFiles') {
@@ -160,6 +204,37 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                           \`;
                       }).join('');
                   }
+
+                  // Listener para a nova mensagem de debug
+                  if (message.command === 'updateDebugMetrics') {
+                      const metrics = message.metrics;
+                      if (!metrics) {
+                          debugDiv.innerHTML = '<p>Nenhum arquivo ativo ou análise pendente.</p>';
+                          return;
+                      }
+
+                      let methodsHtml = '<h4>Métodos:</h4>';
+                      if (metrics.methods && metrics.methods.length > 0) {
+                          methodsHtml += metrics.methods.map(m => \`
+                              <div class="method-details">
+                                  <strong>\${m.name}</strong><br>
+                                  <div class="metric-item"><span>Linhas (LOC):</span> <span class="metric-value">\${m.lines}</span></div>
+                                  <div class="metric-item"><span>Parâmetros (NOP):</span> <span class="metric-value">\${m.nop}</span></div>
+                                  <div class="metric-item"><span>Complexidade (CC):</span> <span class="metric-value">\${m.cc}</span></div>
+                              </div>
+                          \`).join('');
+                      } else {
+                          methodsHtml += '<p><small>Nenhum método encontrado.</small></p>';
+                      }
+
+                      debugDiv.innerHTML = \`
+                          <h4>Classe: \${metrics.className}</h4>
+                          <div class="metric-item"><span>Métodos (NOM):</span> <span class="metric-value">\${metrics.nom}</span></div>
+                          <div class="metric-item"><span>Atributos (NOA):</span> <span class="metric-value">\${metrics.noa}</span></div>
+                          <div class="metric-item"><span>Complexidade Total (WMC):</span> <span class="metric-value">\${metrics.wmc}</span></div>
+                          \${methodsHtml}
+                      \`;
+                  }
               });
 
               form.addEventListener('submit', (event) => {
@@ -168,7 +243,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       rules: {
                           longMethod: {
                               enabled: document.getElementById('longMethod-enabled').checked,
-                              threshold: parseInt(document.getElementById('longMethod-threshold').value, 10)
+                              threshold: parseInt(document.getElementById('longMethod-threshold').value, 10),
+                              nopThreshold: parseInt(document.getElementById('longMethod-nopThreshold').value, 10),
+                              ccThreshold: parseInt(document.getElementById('longMethod-ccThreshold').value, 10)
+                          },
+                          godClass: {
+                              enabled: document.getElementById('godClass-enabled').checked,
+                              nomThreshold: parseInt(document.getElementById('godClass-nomThreshold').value, 10),
+                              noaThreshold: parseInt(document.getElementById('godClass-noaThreshold').value, 10),
+                              wmcThreshold: parseInt(document.getElementById('godClass-wmcThreshold').value, 10)
                           }
                       }
                   };

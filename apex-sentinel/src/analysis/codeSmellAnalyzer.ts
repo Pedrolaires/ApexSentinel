@@ -12,30 +12,29 @@ export class CodeSmellAnalyzer {
     this.parserAdapter = new ParserAdapter();
   }
 
-  public analyze(code: string, uri: vscode.Uri): AnalysisResult[] {
+  public analyze(code: string, uri: vscode.Uri): { results: AnalysisResult[], metrics: Map<string, any> | undefined } {
     const parseResult = this.parserAdapter.parse(code);
     if (!parseResult) {
-      return [];
+      return { results: [], metrics: undefined };
     }
-    
+
     const visitor = new MetricVisitor();
     visitor.visit(parseResult.tree);
-    const metrics = visitor.getMetrics();
-    
+    const metrics = visitor.getMetrics(); 
+
     const configManager = new ConfigurationManager();
     const allRules = RuleFactory.createAllRules();
     let allResults: AnalysisResult[] = [];
 
     for (const rule of allRules) {
       const ruleConfig = configManager.getRuleConfig(rule.name);
-      
+
       if (ruleConfig && ruleConfig.enabled) {
         const context = { metrics, uri, config: ruleConfig };
         const results = rule.apply(context);
         allResults = allResults.concat(results);
       }
     }
-    
-    return allResults;
+    return { results: allResults, metrics: metrics };
   }
 }

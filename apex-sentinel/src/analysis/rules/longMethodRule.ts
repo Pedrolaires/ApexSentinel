@@ -7,16 +7,30 @@ export class LongMethodRule implements ICodeSmellRule {
   apply(context: AnalysisContext): AnalysisResult[] {
     const results: AnalysisResult[] = [];
     
-    const threshold = context.config.threshold || 20;
+    // Pega os thresholds da configuração específica desta regra
+    const locThreshold = context.config.threshold || 20;
+    const nopThreshold = context.config.nopThreshold || 5; // Novo threshold para NOP
+
     const methods = context.metrics.get('methods') || [];
 
     for (const method of methods) {
-      if (method.lines > threshold) {
+      let isSmelly = false;
+      let reason = '';
+
+      if (method.lines > locThreshold) {
+        isSmelly = true;
+        reason = `possui ${method.lines} linhas (limite: ${locThreshold})`;
+      } else if (method.nop > nopThreshold) { 
+        isSmelly = true;
+        reason = `possui ${method.nop} parâmetros (limite: ${nopThreshold})`;
+      }
+
+      if (isSmelly) {
         results.push({
           uri: context.uri,
           line: method.startLine,
           type: 'LONG_METHOD',
-          message: `O método "${method.name}" é muito longo (${method.lines} linhas). O máximo configurado é ${threshold}.`,
+          message: `O método "${method.name}" parece complexo: ${reason}.`,
         });
       }
     }
