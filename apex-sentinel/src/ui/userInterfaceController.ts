@@ -14,7 +14,6 @@ export class UserInterfaceController {
   private configManager: ConfigurationManager;
 
   private openFileScores: Map<string, number> = new Map();
-  private lastActiveMetrics: Map<string, any> | undefined = undefined;
 
   constructor(context: vscode.ExtensionContext) {
     this.analyzer = new CodeSmellAnalyzer();
@@ -40,9 +39,9 @@ export class UserInterfaceController {
   public handleFileOpen(document: vscode.TextDocument): void {
     const filePath = document.uri.fsPath;
     if (!this.openFileScores.has(filePath)) {
-      this.openFileScores.set(filePath, 100); 
-      this.refreshSidebarOpenFiles(); 
-      this.analyzeDocument(document); 
+      this.openFileScores.set(filePath, 100);
+      this.refreshSidebarOpenFiles();
+      this.analyzeDocument(document);
     }
   }
 
@@ -50,11 +49,13 @@ export class UserInterfaceController {
     const filePath = document.uri.fsPath;
     if (this.openFileScores.has(filePath)) {
       this.openFileScores.delete(filePath);
-      this.refreshSidebarOpenFiles(); 
+      this.refreshSidebarOpenFiles();
     }
+    
+    this.analyzer.clearCacheForFile(filePath);
+
     const activeEditorPath = vscode.window.activeTextEditor?.document.uri.fsPath;
     if (!activeEditorPath || activeEditorPath === filePath) {
-        this.lastActiveMetrics = undefined;
         this.sidebarProvider.updateDebugMetrics(undefined);
     }
   }
@@ -66,7 +67,7 @@ export class UserInterfaceController {
         name: path.basename(filePath),
         score: score,
       }));
-
+    
     this.sidebarProvider.updateOpenFiles(sortedFiles);
   }
 
@@ -78,33 +79,32 @@ export class UserInterfaceController {
     const code = document.getText();
     const uri = document.uri;
 
-    const { results: analysisResults, metrics } = this.analyzer.analyze(code, uri);
+    const { results: analysisResults, metrics: newMetrics } = this.analyzer.analyze(code, uri);
 
     const score = this.calculateScore(analysisResults);
     this.openFileScores.set(uri.fsPath, score);
+
     this.diagnosticController.updateDiagnostics(uri, analysisResults);
-    this.updateStatusBar(analysisResults); 
+    this.updateStatusBar(analysisResults);
 
     this.refreshSidebarConfig();
     this.refreshSidebarOpenFiles();
-
-    this.lastActiveMetrics = metrics;
-    this.sidebarProvider.updateDebugMetrics(metrics);
+    this.sidebarProvider.updateDebugMetrics(newMetrics);
   }
-
+  
   public refreshSidebarConfig(): void {
     const currentConfig = this.configManager.getFullConfig();
     this.sidebarProvider.updateConfig(currentConfig);
   }
-
+  
   public async saveConfiguration(newConfig: FullConfig): Promise<void> {
     this.configManager.saveConfig(newConfig);
     await this.analyzeActiveFile();
   }
 
   private calculateScore(results: AnalysisResult[]): number {
-    const vsCodeConfig = vscode.workspace.getConfiguration('apex-sentinel');
-    const penaltyPoints = vsCodeConfig.get<number>('scoring.penaltyPoints', 10);
+    const config = vscode.workspace.getConfiguration('apex-sentinel');
+    const penaltyPoints = config.get<number>('scoring.penaltyPoints', 10);
     return Math.max(0, 100 - (results.length * penaltyPoints));
   }
 
@@ -127,7 +127,6 @@ export class UserInterfaceController {
       this.statusBarItem.text = '$(check) Apex Sentinel';
       this.statusBarItem.tooltip = 'Nenhum arquivo Apex ativo.';
       this.statusBarItem.backgroundColor = undefined;
-      this.lastActiveMetrics = undefined;
       this.sidebarProvider?.updateDebugMetrics(undefined);
       return;
     }
@@ -146,19 +145,15 @@ export class UserInterfaceController {
       const plural = estimatedProblems !== 1 ? 's' : '';
 
       this.statusBarItem.text = `$(warning) Apex Sentinel: ${score}`;
-      this.statusBarItem.tooltip = `Qualidade do código: ${score} (~${estimatedProblems} problema${plural} detectado${plural})`; // Ajusta tooltip
+      this.statusBarItem.tooltip = `Qualidade do código: ${score} (~${estimatedProblems} problema${plural} detectado${plural})`;
       this.statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
     }
     
-    if (this.lastActiveMetrics && this.lastActiveMetrics.get('class')?.name === path.basename(filePath, '.cls')) {
-         this.sidebarProvider.updateDebugMetrics(this.lastActiveMetrics);
-    } else {
-        setTimeout(() => {
-            if(vscode.window.activeTextEditor?.document === document){
-                this.analyzeDocument(document);
-            }
-        }, 500);
-    }
+    setTimeout(() => {
+        if(vscode.window.activeTextEditor?.document === document){
+            this.analyzeDocument(document);
+        }
+    }, 500);
   }
 
   public async analyzeActiveFile(): Promise<void> {
@@ -167,13 +162,12 @@ export class UserInterfaceController {
       await this.analyzeDocument(editor.document);
     } else {
       this.updateStatusBar([]);
-      this.lastActiveMetrics = undefined;
       this.sidebarProvider.updateDebugMetrics(undefined);
       this.refreshSidebarConfig();
       this.refreshSidebarOpenFiles();
     }
   }
-
+  
   public dispose(): void {
     this.statusBarItem.dispose();
   }

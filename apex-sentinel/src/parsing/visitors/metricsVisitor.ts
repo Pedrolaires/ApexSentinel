@@ -24,9 +24,7 @@ export class MetricVisitor
     super();
   }
 
-  protected defaultResult(): void {
-    return;
-  }
+  protected defaultResult(): void { return; }
 
   public visitClassDeclaration(ctx: ClassDeclarationContext): void {
     const name = ctx.id().Identifier()?.symbol.text ?? 'UnknownClass';
@@ -72,25 +70,21 @@ export class MetricVisitor
       nop = params ? params.length : 0;
     }
 
-    const blockNode = ctx.block();
+    const methodBodyNode = ctx.block();
 
-    const cc = CyclomaticComplexityCalculator.calculate(blockNode);
+    const cc = CyclomaticComplexityCalculator.calculate(methodBodyNode);
+    
+    // LOG DE DEPURAÇÃO (RE-ADICIONADO)
+    console.log(`[MetricVisitor] Recalculado CC=${cc} para o método: ${name}`);
 
     this.wmcTotal += cc;
 
     const existingMethods = this.metrics.get('methods') || [];
-    existingMethods.push({
-      name,
-      startLine,
-      endLine,
-      lines,
-      nop,
-      cc
-    });
+    existingMethods.push({ name, startLine, endLine, lines, nop, cc });
     this.metrics.set('methods', existingMethods);
 
-    if (blockNode) {
-        this.visit(blockNode);
+    if (methodBodyNode) {
+        this.visit(methodBodyNode);
     }
   }
 
