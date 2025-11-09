@@ -8,11 +8,7 @@ import { DiagnosticController } from './diagnosticController';
 import { SidebarProvider } from './sidebarProvider';
 import { ISidebarController } from './../analysis/config/ISidebarController';
 
-/**
- * Esta classe é o "Mediador" principal.
- * Ela é instanciada UMA VEZ e coordena todas as outras partes.
- */
-export class UserInterfaceController implements ISidebarController { // <-- IMPLEMENTE A INTERFACE
+export class UserInterfaceController implements ISidebarController {
   private context: vscode.ExtensionContext;
   private analyzer: CodeSmellAnalyzer;
   private configManager: ConfigurationManager;
@@ -30,7 +26,6 @@ export class UserInterfaceController implements ISidebarController { // <-- IMPL
     this.analyzer = new CodeSmellAnalyzer();
     this.diagnosticController = new DiagnosticController();
     this.configManager = new ConfigurationManager();
-    // A SidebarProvider agora espera ISidebarController, e esta classe (this) cumpre o contrato
     this.sidebarProvider = new SidebarProvider(this); 
 
     this.allRules = RuleFactory.createAllRules();
@@ -42,12 +37,9 @@ export class UserInterfaceController implements ISidebarController { // <-- IMPL
     });
   }
 
-  // Getter para o ProviderManager
   public getSidebarProvider(): SidebarProvider {
     return this.sidebarProvider;
   }
-
-  // --- Métodos Chamados por EventManager ---
 
   public analyzeDocument(document: vscode.TextDocument): void {
     const text = document.getText();
@@ -75,14 +67,11 @@ export class UserInterfaceController implements ISidebarController { // <-- IMPL
   }
 
   public updateStatusBarForActiveFile(document: vscode.TextDocument | undefined): void {
-    // (Lógica para atualizar a barra de status)
   }
 
-  // --- Métodos Chamados pela SidebarProvider (Contrato da ISidebarController) ---
 
   public async saveConfiguration(config: FullConfig): Promise<void> {
     vscode.window.showWarningMessage('A edição pela UI será sobrescrita pelo "apex-sentinel.json" se ele existir.');
-    // No futuro, você pode implementar a escrita no settings.json do VSCODE aqui
   }
 
   public refreshSidebarConfig(): void {
@@ -93,7 +82,6 @@ export class UserInterfaceController implements ISidebarController { // <-- IMPL
     this.sidebarProvider.updateOpenFiles(Array.from(this.fileScores.values()));
   }
 
-  // --- Métodos Internos ---
 
   private handleConfigChange(): void {
     this.updateActiveRules();
