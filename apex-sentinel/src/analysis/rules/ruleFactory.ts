@@ -1,6 +1,7 @@
 import { ICodeSmellRule } from './ICodeSmellRule';
 import { LongMethodRule } from './longMethodRule';
 import { GodClassRule } from './godClassRule';
+import { FeatureEnvyRule } from './featureEnvyRule';
 
 export class RuleFactory {
   private static availableRules: Map<string, new () => ICodeSmellRule> = new Map();
@@ -8,6 +9,7 @@ export class RuleFactory {
   static {
     this.availableRules.set('longMethod', LongMethodRule);
     this.availableRules.set('godClass', GodClassRule);
+    this.availableRules.set('featureEnvy', FeatureEnvyRule);
   }
 
   public static createAllRules(): ICodeSmellRule[] {

@@ -9,7 +9,7 @@ interface DebugMetricsData {
   noa: number;
   wmc: number;
   lcom: number;
-  methods: Array<{ name: string; lines: number; nop: number; cc: number }>;
+  methods: Array<{ name: string; lines: number; nop: number; cc: number; atfd: number }>;
 }
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
@@ -58,7 +58,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             name: m.name || 'N/A',
             lines: m.lines || 0,
             nop: m.nop || 0,
-            cc: m.cc || 0
+            cc: m.cc || 0,
+            atfd: m.atfd || 0
           }))
         };
       }
@@ -152,6 +153,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                           </td>
                           <td><input type="checkbox" id="godClass-enabled"></td>
                       </tr>
+                      <tr>
+                          <td>Feature Envy</td>
+                           <td>
+                            <label class="threshold-label">Acessos Externos (ATFD):</label>
+                            <input type="number" id="featureEnvy-atfdThreshold" min="1" placeholder="Ex: 5">
+                          </td>
+                          <td><input type="checkbox" id="featureEnvy-enabled"></td>
+                      </tr>
                   </tbody>
               </table>
               <button type="submit">Salvar</button>
@@ -177,6 +186,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
                   if (message.command === 'loadConfig') {
                       const rules = message.config.rules;
+                      
                       const longMethod = rules.longMethod || { enabled: true, threshold: 20, nopThreshold: 5, ccThreshold: 10 };
                       document.getElementById('longMethod-enabled').checked = longMethod.enabled;
                       document.getElementById('longMethod-threshold').value = longMethod.threshold;
@@ -189,6 +199,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       document.getElementById('godClass-noaThreshold').value = godClass.noaThreshold;
                       document.getElementById('godClass-wmcThreshold').value = godClass.wmcThreshold;
                       document.getElementById('godClass-lcomThreshold').value = godClass.lcomThreshold;
+
+                      const featureEnvy = rules.featureEnvy || { enabled: true, atfdThreshold: 5 };
+                      document.getElementById('featureEnvy-enabled').checked = featureEnvy.enabled;
+                      document.getElementById('featureEnvy-atfdThreshold').value = featureEnvy.atfdThreshold;
                   }
 
                   if (message.command === 'updateOpenFiles') {
@@ -224,6 +238,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                                   <div class="metric-item"><span>Linhas (LOC):</span> <span class="metric-value">\${m.lines}</span></div>
                                   <div class="metric-item"><span>Parâmetros (NOP):</span> <span class="metric-value">\${m.nop}</span></div>
                                   <div class="metric-item"><span>Complexidade (CC):</span> <span class="metric-value">\${m.cc}</span></div>
+                                  <div class="metric-item"><span>Acessos Externos (ATFD):</span> <span class="metric-value">\${m.atfd}</span></div>
                               </div>
                           \`).join('');
                       } else {
@@ -257,6 +272,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                               noaThreshold: parseInt(document.getElementById('godClass-noaThreshold').value, 10),
                               wmcThreshold: parseInt(document.getElementById('godClass-wmcThreshold').value, 10),
                               lcomThreshold: parseInt(document.getElementById('godClass-lcomThreshold').value, 10)
+                          },
+                          featureEnvy: {
+                              enabled: document.getElementById('featureEnvy-enabled').checked,
+                              atfdThreshold: parseInt(document.getElementById('featureEnvy-atfdThreshold').value, 10)
                           }
                       }
                   };
