@@ -17,7 +17,7 @@ export class FeatureEnvyRule implements ICodeSmellRule {
           uri: context.uri,
           line: method.startLine,
           type: 'FEATURE_ENVY',
-          message: `O método "${method.name}" acede a muitos dados (${method.atfd}) de outras classes (Feature Envy). Considere mover este método para a classe que ele mais acede.`,
+          message: `O método "${method.name}" tem acesso a muitos dados (${method.atfd}) de outras classes (Feature Envy). Considere mover este método para a classe onde ele é mais utilizado.`,
         });
       }
     }

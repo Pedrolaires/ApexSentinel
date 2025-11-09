@@ -20,6 +20,10 @@
       {
         "command": "apex-sentinel.analyzeFile",
         "title": "Apex Sentinel: Analyze Apex Code"
+      },
+      {
+        "command": "apex-sentinel.openRuleDocumentation",
+        "title": "Apex Sentinel: Abrir documentação da regra"
       }
     ],
     "languages": [

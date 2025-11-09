@@ -12,14 +12,22 @@ export class CommandManager {
     const analyzeFileCommand = vscode.commands.registerCommand(
       'apex-sentinel.analyzeFile',
       async () => {
-        await this.uiController.analyzeActiveFile();
+        const editor = vscode.window.activeTextEditor;
+        if (editor && editor.document.languageId === 'apex') {
+          this.uiController.analyzeDocument(editor.document);
+          vscode.window.showInformationMessage('Análise do Apex Sentinel executada.');
+        } else {
+          vscode.window.showWarningMessage('Nenhum arquivo Apex ativo para analisar.');
+        }
       }
     );
 
     const openDocCommand = vscode.commands.registerCommand(
       'apex-sentinel.openRuleDocumentation',
       (url: string) => {
-        vscode.env.openExternal(vscode.Uri.parse(url));
+        if (url) {
+          vscode.env.openExternal(vscode.Uri.parse(url));
+        }
       }
     );
 

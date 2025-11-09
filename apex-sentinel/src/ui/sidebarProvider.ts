@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
-import { FullConfig } from '../analysis/config/configurationManager';
-import { UserInterfaceController } from './userInterfaceController';
 import * as path from 'path';
+import { ISidebarController } from './../analysis/config/ISidebarController';
+import { FullConfig } from '../analysis/config/configurationManager';
 
 interface DebugMetricsData {
   className: string;
@@ -14,9 +14,10 @@ interface DebugMetricsData {
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
-  private uiController: UserInterfaceController;
+  // private uiController: UserInterfaceController; // <-- REMOVA ISSO
+  private uiController: ISidebarController; // <-- ADICIONE ISSO
 
-  constructor(uiController: UserInterfaceController) {
+  constructor(uiController: ISidebarController) { // <-- TIPO ATUALIZADO
     this.uiController = uiController;
   }
 
@@ -73,6 +74,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  // O HTML permanece exatamente o mesmo, pode copiar e colar
   private getHtmlForWebview(): string {
     return `
       <!DOCTYPE html>
@@ -111,7 +113,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
               <span>Pontuação</span>
           </div>
           <div id="open-files-list">
-            <p>Carregando...</p>
+              <p>Carregando...</p>
           </div>
 
           <hr>
@@ -119,7 +121,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <h1>Configurações de Regras</h1>
           <form id="config-form">
               <table>
-                   <thead>
+                  <thead>
                       <tr>
                           <th>Regra</th>
                           <th>Threshold(s)</th>
@@ -141,7 +143,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       </tr>
                       <tr>
                           <td>God Class</td>
-                           <td>
+                          <td>
                             <label class="threshold-label">Métodos (NOM):</label>
                             <input type="number" id="godClass-nomThreshold" min="1" placeholder="Ex: 15">
                             <label class="threshold-label">Atributos (NOA):</label>
@@ -155,7 +157,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       </tr>
                       <tr>
                           <td>Feature Envy</td>
-                           <td>
+                          <td>
                             <label class="threshold-label">Acessos Externos (ATFD):</label>
                             <input type="number" id="featureEnvy-atfdThreshold" min="1" placeholder="Ex: 5">
                           </td>
@@ -170,7 +172,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           
           <h1>Debug Métricas</h1>
           <div id="debug-metrics">
-            <p>Nenhum arquivo ativo ou análise pendente.</p>
+              <p>Nenhum arquivo ativo ou análise pendente.</p>
           </div>
 
           <script>

@@ -9,6 +9,7 @@ export class LongMethodRule implements ICodeSmellRule {
     
     const locThreshold = context.config.threshold || 20;
     const nopThreshold = context.config.nopThreshold || 5;
+    const ccThreshold = context.config.ccThreshold || 10;
 
     const methods = context.metrics.get('methods') || [];
 
@@ -22,6 +23,9 @@ export class LongMethodRule implements ICodeSmellRule {
       } else if (method.nop > nopThreshold) { 
         isSmelly = true;
         reason = `possui ${method.nop} parâmetros (limite: ${nopThreshold})`;
+      } else if (method.cc > ccThreshold) {
+        isSmelly = true;
+        reason = `possui Complexidade Ciclomática de ${method.cc} (limite: ${ccThreshold})`;
       }
 
       if (isSmelly) {

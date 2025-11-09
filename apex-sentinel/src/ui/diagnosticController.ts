@@ -32,6 +32,13 @@ export class DiagnosticController {
     this.collection.set(uri, diagnostics);
   }
 
+  public clearDiagnostics(uri: vscode.Uri): void {
+    this.collection.delete(uri);
+  }
+  public dispose(): void {
+    this.collection.dispose();
+  }
+
 
   private mapSeverity(type: string): vscode.DiagnosticSeverity {
     switch (type.toUpperCase()) {
