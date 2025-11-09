@@ -177,13 +177,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
                   if (message.command === 'loadConfig') {
                       const rules = message.config.rules;
-                      // Long Method
                       const longMethod = rules.longMethod || { enabled: true, threshold: 20, nopThreshold: 5, ccThreshold: 10 };
                       document.getElementById('longMethod-enabled').checked = longMethod.enabled;
                       document.getElementById('longMethod-threshold').value = longMethod.threshold;
                       document.getElementById('longMethod-nopThreshold').value = longMethod.nopThreshold;
                       document.getElementById('longMethod-ccThreshold').value = longMethod.ccThreshold;
-                      // God Class
+                      
                       const godClass = rules.godClass || { enabled: true, nomThreshold: 15, noaThreshold: 10, wmcThreshold: 47, lcomThreshold: 10 };
                       document.getElementById('godClass-enabled').checked = godClass.enabled;
                       document.getElementById('godClass-nomThreshold').value = godClass.nomThreshold;

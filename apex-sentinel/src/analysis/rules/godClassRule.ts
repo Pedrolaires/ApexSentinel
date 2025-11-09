@@ -10,7 +10,7 @@ export class GodClassRule implements ICodeSmellRule {
     const nomThreshold = context.config.nomThreshold || 15;
     const noaThreshold = context.config.noaThreshold || 10;
     const wmcThreshold = context.config.wmcThreshold || 47;
-    const lcomThreshold = context.config.lcomThreshold || 10; // LCOM1 é uma contagem, não uma %
+    const lcomThreshold = context.config.lcomThreshold || 10;
 
     const classMetrics = context.metrics.get('class');
 
@@ -18,7 +18,6 @@ export class GodClassRule implements ICodeSmellRule {
       let isSmelly = false;
       let reason = '';
 
-      // Estratégia de Detecção baseada no seu artigo (com LCOM)
       if (classMetrics.wmc > wmcThreshold && classMetrics.lcom > lcomThreshold) {
         isSmelly = true;
         reason = `possui WMC muito alto (${classMetrics.wmc}) e baixa coesão (LCOM: ${classMetrics.lcom})`;

@@ -1,4 +1,3 @@
-// analysis/metrics/attributeUsageVisitor.ts
 import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
 import { RuleNode } from 'antlr4ts/tree/RuleNode';
 import {

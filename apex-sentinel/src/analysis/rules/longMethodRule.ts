@@ -7,9 +7,8 @@ export class LongMethodRule implements ICodeSmellRule {
   apply(context: AnalysisContext): AnalysisResult[] {
     const results: AnalysisResult[] = [];
     
-    // Pega os thresholds da configuração específica desta regra
     const locThreshold = context.config.threshold || 20;
-    const nopThreshold = context.config.nopThreshold || 5; // Novo threshold para NOP
+    const nopThreshold = context.config.nopThreshold || 5;
 
     const methods = context.metrics.get('methods') || [];
 
