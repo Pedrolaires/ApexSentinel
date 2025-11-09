@@ -47,6 +47,46 @@
           "type": "number",
           "default": 20,
           "description": "Define o número de linhas a partir do qual um método é considerado 'longo'."
+        },
+        "apex-sentinel.rules.longMethod.nopThreshold": {
+          "type": "number",
+          "default": 5,
+          "description": "Define o número de parâmetros a partir do qual um método é considerado 'longo'."
+        },
+        "apex-sentinel.rules.longMethod.ccThreshold": {
+          "type": "number",
+          "default": 10,
+          "description": "Define o valor de Complexidade Ciclomática a partir do qual um método é considerado 'complexo'."
+        },
+        "apex-sentinel.rules.godClass.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Habilita ou desabilita a regra que detecta God Classes."
+        },
+        "apex-sentinel.rules.godClass.nomThreshold": {
+          "type": "number",
+          "default": 15,
+          "description": "Número de métodos (NOM) a partir do qual a classe é considerada suspeita."
+        },
+        "apex-sentinel.rules.godClass.noaThreshold": {
+          "type": "number",
+          "default": 10,
+          "description": "Número de atributos (NOA) a partir do qual a classe é considerada suspeita."
+        },
+        "apex-sentinel.rules.godClass.wmcThreshold": {
+          "type": "number",
+          "default": 47,
+          "description": "Complexidade Total de Métodos (WMC) a partir do qual a classe é considerada suspeita."
+        },
+        "apex-sentinel.rules.godClass.lcomThreshold": {
+          "type": "number",
+          "default": 10,
+          "description": "Falta de Coesão (LCOM) a partir do qual a classe é considerada suspeita."
+        },
+        "apex-sentinel.scoring.penaltyPoints": {
+          "type": "number",
+          "default": 10,
+          "description": "Número de pontos a serem deduzidos da pontuação de qualidade para cada problema encontrado."
         }
       }
     },

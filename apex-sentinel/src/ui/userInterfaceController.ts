@@ -14,6 +14,7 @@ export class UserInterfaceController {
   private configManager: ConfigurationManager;
 
   private openFileScores: Map<string, number> = new Map();
+  private lastActiveMetrics: Map<string, any> | undefined = undefined;
 
   constructor(context: vscode.ExtensionContext) {
     this.analyzer = new CodeSmellAnalyzer();
@@ -56,6 +57,7 @@ export class UserInterfaceController {
 
     const activeEditorPath = vscode.window.activeTextEditor?.document.uri.fsPath;
     if (!activeEditorPath || activeEditorPath === filePath) {
+        this.lastActiveMetrics = undefined;
         this.sidebarProvider.updateDebugMetrics(undefined);
     }
   }
@@ -83,6 +85,10 @@ export class UserInterfaceController {
 
     const score = this.calculateScore(analysisResults);
     this.openFileScores.set(uri.fsPath, score);
+
+    if (vscode.window.activeTextEditor?.document.uri.fsPath === uri.fsPath) {
+        this.lastActiveMetrics = newMetrics;
+    }
 
     this.diagnosticController.updateDiagnostics(uri, analysisResults);
     this.updateStatusBar(analysisResults);
@@ -127,6 +133,7 @@ export class UserInterfaceController {
       this.statusBarItem.text = '$(check) Apex Sentinel';
       this.statusBarItem.tooltip = 'Nenhum arquivo Apex ativo.';
       this.statusBarItem.backgroundColor = undefined;
+      this.lastActiveMetrics = undefined;
       this.sidebarProvider?.updateDebugMetrics(undefined);
       return;
     }
@@ -149,11 +156,15 @@ export class UserInterfaceController {
       this.statusBarItem.backgroundColor = new vscode.ThemeColor('statusBarItem.warningBackground');
     }
     
-    setTimeout(() => {
-        if(vscode.window.activeTextEditor?.document === document){
-            this.analyzeDocument(document);
-        }
-    }, 500);
+    if (this.lastActiveMetrics && this.lastActiveMetrics.get('class')?.name === path.basename(filePath, '.cls')) {
+         this.sidebarProvider.updateDebugMetrics(this.lastActiveMetrics);
+    } else {
+        setTimeout(() => {
+            if(vscode.window.activeTextEditor?.document === document){
+                this.analyzeDocument(document);
+            }
+        }, 500);
+    }
   }
 
   public async analyzeActiveFile(): Promise<void> {
@@ -162,6 +173,7 @@ export class UserInterfaceController {
       await this.analyzeDocument(editor.document);
     } else {
       this.updateStatusBar([]);
+      this.lastActiveMetrics = undefined;
       this.sidebarProvider.updateDebugMetrics(undefined);
       this.refreshSidebarConfig();
       this.refreshSidebarOpenFiles();

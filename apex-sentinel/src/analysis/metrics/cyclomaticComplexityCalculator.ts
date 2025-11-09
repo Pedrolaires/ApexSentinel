@@ -7,13 +7,17 @@ import {
     IfStatementContext,
     WhileStatementContext,
     WhenControlContext,
-    CondExpressionContext, // ?:
-    LogAndExpressionContext, // &&
-    LogOrExpressionContext, // ||
+    CondExpressionContext,
+    LogAndExpressionContext,
+    LogOrExpressionContext,
 } from 'apex-parser/lib/ApexParser';
 import { ApexParserVisitor } from 'apex-parser/lib/ApexParserVisitor';
 
 class CCVisitor extends AbstractParseTreeVisitor<number> implements ApexParserVisitor<number> {
+  constructor() {
+    super();
+  }
+  
   protected defaultResult(): number {
     return 0;
   }
@@ -77,7 +81,7 @@ export class CyclomaticComplexityCalculator {
 
   public static calculate(node: RuleNode | undefined): number {
     if (!node) {
-      return 1; 
+      return 1;
     }
     return 1 + this.visitor.visit(node);
   }

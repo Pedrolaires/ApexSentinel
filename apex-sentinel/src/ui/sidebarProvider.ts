@@ -8,6 +8,7 @@ interface DebugMetricsData {
   nom: number;
   noa: number;
   wmc: number;
+  lcom: number;
   methods: Array<{ name: string; lines: number; nop: number; cc: number }>;
 }
 
@@ -34,7 +35,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       }
     });
   }
-
+  
   public updateOpenFiles(files: { name: string, score: number }[]): void {
     if (this.view) {
       this.view.webview.postMessage({ command: 'updateOpenFiles', files: files });
@@ -52,6 +53,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           nom: classData.nom || 0,
           noa: classData.noa || 0,
           wmc: classData.wmc || 0,
+          lcom: classData.lcom || 0,
           methods: methodData.map((m: any) => ({
             name: m.name || 'N/A',
             lines: m.lines || 0,
@@ -143,8 +145,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                             <input type="number" id="godClass-nomThreshold" min="1" placeholder="Ex: 15">
                             <label class="threshold-label">Atributos (NOA):</label>
                             <input type="number" id="godClass-noaThreshold" min="1" placeholder="Ex: 10">
-                            <label class="threshold-label">Complexidade Total (WMC):</label>
+                            <label class="threshold-label">Complexidade (WMC):</label>
                             <input type="number" id="godClass-wmcThreshold" min="1" placeholder="Ex: 47">
+                            <label class="threshold-label">Falta de Coesão (LCOM):</label>
+                            <input type="number" id="godClass-lcomThreshold" min="1" placeholder="Ex: 10">
                           </td>
                           <td><input type="checkbox" id="godClass-enabled"></td>
                       </tr>
@@ -154,7 +158,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           </form>
 
           <hr>
-
+          
           <h1>Debug Métricas</h1>
           <div id="debug-metrics">
             <p>Nenhum arquivo ativo ou análise pendente.</p>
@@ -163,7 +167,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <script>
               const vscode = acquireVsCodeApi();
               const form = document.getElementById('config-form');
-              const debugDiv = document.getElementById('debug-metrics'); // Div para debug
+              const debugDiv = document.getElementById('debug-metrics');
               const openFilesDiv = document.getElementById('open-files-list');
 
               window.addEventListener('load', () => { vscode.postMessage({ command: 'ready' }); });
@@ -180,11 +184,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       document.getElementById('longMethod-nopThreshold').value = longMethod.nopThreshold;
                       document.getElementById('longMethod-ccThreshold').value = longMethod.ccThreshold;
                       // God Class
-                      const godClass = rules.godClass || { enabled: true, nomThreshold: 15, noaThreshold: 10, wmcThreshold: 47 };
+                      const godClass = rules.godClass || { enabled: true, nomThreshold: 15, noaThreshold: 10, wmcThreshold: 47, lcomThreshold: 10 };
                       document.getElementById('godClass-enabled').checked = godClass.enabled;
                       document.getElementById('godClass-nomThreshold').value = godClass.nomThreshold;
                       document.getElementById('godClass-noaThreshold').value = godClass.noaThreshold;
                       document.getElementById('godClass-wmcThreshold').value = godClass.wmcThreshold;
+                      document.getElementById('godClass-lcomThreshold').value = godClass.lcomThreshold;
                   }
 
                   if (message.command === 'updateOpenFiles') {
@@ -205,7 +210,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       }).join('');
                   }
 
-                  // Listener para a nova mensagem de debug
                   if (message.command === 'updateDebugMetrics') {
                       const metrics = message.metrics;
                       if (!metrics) {
@@ -231,7 +235,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                           <h4>Classe: \${metrics.className}</h4>
                           <div class="metric-item"><span>Métodos (NOM):</span> <span class="metric-value">\${metrics.nom}</span></div>
                           <div class="metric-item"><span>Atributos (NOA):</span> <span class="metric-value">\${metrics.noa}</span></div>
-                          <div class="metric-item"><span>Complexidade Total (WMC):</span> <span class="metric-value">\${metrics.wmc}</span></div>
+                          <div class="metric-item"><span>Complexidade (WMC):</span> <span class="metric-value">\${metrics.wmc}</span></div>
+                          <div class="metric-item"><span>Falta de Coesão (LCOM):</span> <span class="metric-value">\${metrics.lcom}</span></div>
                           \${methodsHtml}
                       \`;
                   }
@@ -251,7 +256,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                               enabled: document.getElementById('godClass-enabled').checked,
                               nomThreshold: parseInt(document.getElementById('godClass-nomThreshold').value, 10),
                               noaThreshold: parseInt(document.getElementById('godClass-noaThreshold').value, 10),
-                              wmcThreshold: parseInt(document.getElementById('godClass-wmcThreshold').value, 10)
+                              wmcThreshold: parseInt(document.getElementById('godClass-wmcThreshold').value, 10),
+                              lcomThreshold: parseInt(document.getElementById('godClass-lcomThreshold').value, 10)
                           }
                       }
                   };

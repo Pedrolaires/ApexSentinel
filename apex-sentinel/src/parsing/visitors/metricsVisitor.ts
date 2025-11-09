@@ -1,91 +1,81 @@
-import { CyclomaticComplexityCalculator } from './../../analysis/metrics/cyclomaticComplexityCalculator';
-import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
 import {
   ClassDeclarationContext,
   MethodDeclarationContext,
-  FieldDeclarationContext,
-  FormalParametersContext,
-  FormalParameterListContext,
-  BlockContext
+  FieldDeclarationContext
 } from 'apex-parser/lib/ApexParser';
-import { ApexParserVisitor } from 'apex-parser/lib/ApexParserVisitor';
+
+import { AbstractParseTreeVisitor } from 'antlr4ts/tree/AbstractParseTreeVisitor';
 import { RuleNode } from 'antlr4ts/tree/RuleNode';
+
+import { AttributeCollectorVisitor } from '../../analysis/metrics/attributeCollectorVisitor';
+import { AttributeUsageVisitor } from '../../analysis/metrics/attributeUsageVisitor';
+import { CyclomaticComplexityCalculator } from '../../analysis/metrics/cyclomaticComplexityCalculator';
+import { LCOMCalculator } from '../../analysis/metrics/lcomCalculator';
 
 export class MetricVisitor
   extends AbstractParseTreeVisitor<void>
-  implements ApexParserVisitor<void>
 {
   private metrics: Map<string, any> = new Map();
-  private nomCounter: number = 0;
-  private noaCounter: number = 0;
-  private wmcTotal: number = 0;
 
-  constructor() {
-    super();
-  }
+  private classAttributes = new Set<string>();
+  private methodAttributeUsage = new Map<string, Set<string>>();
 
-  protected defaultResult(): void { return; }
+  private nom = 0;
+  private noa = 0;
+  private wmc = 0;
+
+  protected defaultResult(): void {}
 
   public visitClassDeclaration(ctx: ClassDeclarationContext): void {
-    const name = ctx.id().Identifier()?.symbol.text ?? 'UnknownClass';
-    const startLine = ctx._start.line;
-    const endLine = ctx._stop?.line ?? startLine;
+    this.nom = 0;
+    this.noa = 0;
+    this.wmc = 0;
+    this.methodAttributeUsage.clear();
+    this.classAttributes.clear();
 
-    this.nomCounter = 0;
-    this.noaCounter = 0;
-    this.wmcTotal = 0;
+    const className = ctx.id().text;
 
-    const classBody = ctx.classBody();
-    if (classBody) {
-        this.visit(classBody);
-    }
+    const collector = new AttributeCollectorVisitor();
+    collector.visit(ctx.classBody());
+    this.classAttributes = collector.classAttributes;
+
+    console.log(`[LCOM] Atributos encontrados: ${Array.from(this.classAttributes).join(', ')}`);
+
+    this.visitChildren(ctx.classBody());
+
+    const lcom = LCOMCalculator.calculate(this.methodAttributeUsage);
 
     this.metrics.set('class', {
-      name,
-      startLine,
-      endLine,
-      nom: this.nomCounter,
-      noa: this.noaCounter,
-      wmc: this.wmcTotal
+      name: className,
+      nom: this.nom,
+      noa: this.noa,
+      wmc: this.wmc,
+      lcom
     });
   }
 
   public visitFieldDeclaration(ctx: FieldDeclarationContext): void {
-    this.noaCounter++;
+    this.noa++;
+    this.visitChildren(ctx);
   }
 
   public visitMethodDeclaration(ctx: MethodDeclarationContext): void {
-    this.nomCounter++;
+    this.nom++;
 
-    const name = ctx.id().Identifier()?.symbol.text ?? 'UnknownMethod';
-    const startLine = ctx._start.line;
-    const endLine = ctx._stop?.line ?? startLine;
-    const lines = endLine - startLine + 1;
+    const name = ctx.id().text;
+    const body = ctx.block();
 
-    let nop = 0;
-    const parametersCtx = ctx.formalParameters();
-    const paramListCtx = parametersCtx.formalParameterList();
-    if (paramListCtx) {
-      const params = paramListCtx.formalParameter();
-      nop = params ? params.length : 0;
-    }
+    const cc = CyclomaticComplexityCalculator.calculate(body);
+    this.wmc += cc;
 
-    const methodBodyNode = ctx.block();
+    const usage = new AttributeUsageVisitor(this.classAttributes);
+    if (body) {usage.visit(body);}
 
-    const cc = CyclomaticComplexityCalculator.calculate(methodBodyNode);
-    
-    // LOG DE DEPURAÇÃO (RE-ADICIONADO)
-    console.log(`[MetricVisitor] Recalculado CC=${cc} para o método: ${name}`);
+    this.methodAttributeUsage.set(name, usage.usedAttributes);
 
-    this.wmcTotal += cc;
+    console.log(`[LCOM] Método ${name} usa: ${Array.from(usage.usedAttributes).join(', ')}`);
 
-    const existingMethods = this.metrics.get('methods') || [];
-    existingMethods.push({ name, startLine, endLine, lines, nop, cc });
-    this.metrics.set('methods', existingMethods);
-
-    if (methodBodyNode) {
-        this.visit(methodBodyNode);
-    }
+    this.visitChildren(ctx);
   }
 
   public getMetrics(): Map<string, any> {
@@ -93,12 +83,10 @@ export class MetricVisitor
   }
 
   public visitChildren(node: RuleNode): void {
-      const n = node.childCount;
-      for (let i = 0; i < n; i++) {
-          const child = node.getChild(i);
-          if (child instanceof RuleNode) {
-              this.visit(child);
-          }
-      }
+    const n = node.childCount;
+    for (let i = 0; i < n; i++) {
+      const c = node.getChild(i);
+      if (c instanceof RuleNode) {this.visit(c);}
+    }
   }
 }

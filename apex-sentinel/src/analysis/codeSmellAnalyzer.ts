@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
-import { MetricVisitor } from '../parsing/visitors/metricsVisitor';
 import { ParserAdapter } from './../parsing/parseAdapter';
+import { MetricVisitor } from '../parsing/visitors/metricsVisitor';
 import { AnalysisResult } from './analysisResult';
 import { RuleFactory } from './rules/ruleFactory';
 import { ConfigurationManager } from './config/configurationManager';
 
 export class CodeSmellAnalyzer {
   private parserAdapter: ParserAdapter;
-  
+
   constructor() {
     this.parserAdapter = new ParserAdapter();
   }
@@ -34,7 +34,7 @@ export class CodeSmellAnalyzer {
       const ruleConfig = configManager.getRuleConfig(rule.name);
 
       if (ruleConfig && ruleConfig.enabled) {
-        const context = { metrics: newMetrics, uri, config: ruleConfig };
+        const context = { metrics: newMetrics, uri: uri, config: ruleConfig };
         const results = rule.apply(context);
         allResults = allResults.concat(results);
       }
@@ -44,6 +44,5 @@ export class CodeSmellAnalyzer {
   }
 
   public clearCacheForFile(filePath: string): void {
-    // 
   }
 }
