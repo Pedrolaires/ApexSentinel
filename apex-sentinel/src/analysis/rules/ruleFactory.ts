@@ -3,6 +3,7 @@ import { LongMethodRule } from './longMethodRule';
 import { GodClassRule } from './godClassRule';
 import { FeatureEnvyRule } from './featureEnvyRule';
 import { EmptyCatchBlockRule } from './emptyCatchBlockRule';
+import { MagicNumberRule } from './magicNumberRule';
 
 export class RuleFactory {
   private static availableRules: Map<string, new () => ICodeSmellRule> = new Map();
@@ -12,6 +13,7 @@ export class RuleFactory {
     this.availableRules.set('godClass', GodClassRule);
     this.availableRules.set('featureEnvy', FeatureEnvyRule);
     this.availableRules.set('emptyCatchBlock', EmptyCatchBlockRule);
+    this.availableRules.set('magicNumber', MagicNumberRule);
   }
 
   public static createAllRules(): ICodeSmellRule[] {

@@ -101,6 +101,9 @@ export class ConfigurationManager {
         },
         emptyCatchBlock: {
           enabled: config.get('rules.emptyCatchBlock.enabled', true)
+        },
+        magicNumber: {
+          enabled: config.get('rules.magicNumber.enabled', true)
         }
       },
     };

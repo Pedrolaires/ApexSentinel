@@ -45,6 +45,10 @@ export class DiagnosticController {
       case 'ERROR':
         return vscode.DiagnosticSeverity.Error;
       case 'LONG_METHOD':
+      case 'GOD_CLASS':
+      case 'FEATURE_ENVY':
+      case 'EMPTY_CATCH_BLOCK':
+      case 'MAGIC_NUMBER':
         return vscode.DiagnosticSeverity.Warning;
       default:
         return vscode.DiagnosticSeverity.Information;

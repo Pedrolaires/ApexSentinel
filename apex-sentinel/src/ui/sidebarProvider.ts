@@ -73,7 +73,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  private getHtmlForWebview(): string {
+private getHtmlForWebview(): string {
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -100,7 +100,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
               button { margin-top: 15px; padding: 5px 10px; background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 2px; cursor: pointer; }
               button:hover { background: var(--vscode-button-hoverBackground); }
               
-              /* Estilos da nova tabela de métricas */
               .metrics-table { margin-top: 15px; width: 100%; border-collapse: collapse; }
               .metrics-table th, .metrics-table td { padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--vscode-divider-background); }
               .metrics-table th { font-weight: bold; }
@@ -175,6 +174,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                           </td>
                           <td><input type="checkbox" id="emptyCatchBlock-enabled"></td>
                       </tr>
+
+                      <tr>
+                          <td>Número Mágico</td>
+                          <td>
+                            <label class="threshold-label">Detecta literais numéricos (exceto 0, 1) fora de constantes.</label>
+                          </td>
+                          <td><input type="checkbox" id="magicNumber-enabled"></td>
+                      </tr>
                       </tbody>
               </table>
               <button type="submit">Salvar</button>
@@ -220,6 +227,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
                       const emptyCatchBlock = rules.emptyCatchBlock || { enabled: true };
                       document.getElementById('emptyCatchBlock-enabled').checked = emptyCatchBlock.enabled;
+
+                      const magicNumber = rules.magicNumber || { enabled: true };
+                      document.getElementById('magicNumber-enabled').checked = magicNumber.enabled;
                   }
 
                   if (message.command === 'updateOpenFiles') {
@@ -314,6 +324,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                           },
                           emptyCatchBlock: {
                               enabled: document.getElementById('emptyCatchBlock-enabled').checked
+                          },
+                          magicNumber: {
+                              enabled: document.getElementById('magicNumber-enabled').checked
                           }
                       }
                   };

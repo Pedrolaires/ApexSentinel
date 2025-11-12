@@ -88,9 +88,14 @@
           "description": "Falta de Coesão (LCOM) a partir do qual a classe é considerada suspeita."
         },
         "apex-sentinel.rules.emptyCatchBlock.enabled": {
-        "type": "boolean",
-        "default": true,
-        "description": "Habilita ou desabilita a regra que detecta blocos try/catch vazios."
+          "type": "boolean",
+          "default": true,
+          "description": "Habilita ou desabilita a regra que detecta blocos try/catch vazios."
+        },
+        "apex-sentinel.rules.magicNumber.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Habilita ou desabilita a regra que detecta 'Números Mágicos' (literais numéricos no código)."
         },
         "apex-sentinel.scoring.penaltyPoints": {
           "type": "number",

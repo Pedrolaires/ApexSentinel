@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { CodeSmellAnalyzer } from '../analysis/codeSmellAnalyzer';
+import * as fs from 'fs';
 import { ConfigurationManager, FullConfig } from '../analysis/config/configurationManager';
 import { ICodeSmellRule } from '../analysis/rules/ICodeSmellRule';
 import { RuleFactory } from '../analysis/rules/ruleFactory';
@@ -71,7 +72,23 @@ export class UserInterfaceController implements ISidebarController {
 
 
   public async saveConfiguration(config: FullConfig): Promise<void> {
-    vscode.window.showWarningMessage('A edição pela UI será sobrescrita pelo "apex-sentinel.json" se ele existir.');
+   const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      vscode.window.showErrorMessage('[Apex Sentinel] Nenhum workspace aberto. Não foi possível salvar a configuração.');
+      return;
+    }
+
+    const rootPath = workspaceFolders[0].uri.fsPath;
+    const configPath = path.join(rootPath, '.apexsentinelrc.json');
+    const jsonString = JSON.stringify(config, null, 2);
+
+    try {
+      fs.writeFileSync(configPath, jsonString, 'utf-8');
+      vscode.window.showInformationMessage('[Apex Sentinel] Configuração salva em .apexsentinelrc.json');
+    } catch (e) {
+      console.error(e);
+      vscode.window.showErrorMessage(`[Apex Sentinel] Falha ao salvar .apexsentinelrc.json: ${e}`);
+    }
   }
 
   public refreshSidebarConfig(): void {
