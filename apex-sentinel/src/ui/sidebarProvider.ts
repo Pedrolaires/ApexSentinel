@@ -14,10 +14,9 @@ interface DebugMetricsData {
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   private view?: vscode.WebviewView;
-  // private uiController: UserInterfaceController; // <-- REMOVA ISSO
-  private uiController: ISidebarController; // <-- ADICIONE ISSO
+  private uiController: ISidebarController;
 
-  constructor(uiController: ISidebarController) { // <-- TIPO ATUALIZADO
+  constructor(uiController: ISidebarController) {
     this.uiController = uiController;
   }
 
@@ -74,7 +73,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  // O HTML permanece exatamente o mesmo, pode copiar e colar
   private getHtmlForWebview(): string {
     return `
       <!DOCTYPE html>
@@ -101,7 +99,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
               label.threshold-label { font-size: 0.8em; margin-top: 5px; display: block; }
               button { margin-top: 15px; padding: 5px 10px; background: var(--vscode-button-background); color: var(--vscode-button-foreground); border: none; border-radius: 2px; cursor: pointer; }
               button:hover { background: var(--vscode-button-hoverBackground); }
-              .method-details { margin-left: 15px; font-size: 0.9em; border-left: 2px solid var(--vscode-editorWidget-border); padding-left: 10px; margin-top: 5px; margin-bottom: 10px;}
+              
+              /* Estilos da nova tabela de métricas */
+              .metrics-table { margin-top: 15px; width: 100%; border-collapse: collapse; }
+              .metrics-table th, .metrics-table td { padding: 6px 4px; text-align: left; border-bottom: 1px solid var(--vscode-divider-background); }
+              .metrics-table th { font-weight: bold; }
+              .metrics-table td:last-child { text-align: right; font-weight: bold; font-family: monospace; }
+              .metrics-table h4 { margin: 10px 0 5px 0; }
+
               #debug-metrics { margin-top: 20px; }
               hr { border: 1px solid var(--vscode-editorWidget-border); margin: 20px 0; }
           </style>
@@ -174,7 +179,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <div id="debug-metrics">
               <p>Nenhum arquivo ativo ou análise pendente.</p>
           </div>
-
           <script>
               const vscode = acquireVsCodeApi();
               const form = document.getElementById('config-form');
@@ -225,6 +229,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       }).join('');
                   }
 
+                  // LÓGICA DE RENDERIZAÇÃO DE DEBUG ATUALIZADA
                   if (message.command === 'updateDebugMetrics') {
                       const metrics = message.metrics;
                       if (!metrics) {
@@ -232,27 +237,45 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                           return;
                       }
 
-                      let methodsHtml = '<h4>Métodos:</h4>';
+                      let methodsHtml = '<h4>Métricas por Método</h4>';
                       if (metrics.methods && metrics.methods.length > 0) {
+                          methodsHtml += '<table class="metrics-table"><thead><tr><th>Método</th><th>LOC</th><th>NOP</th><th>CC</th><th>ATFD</th></tr></thead><tbody>';
                           methodsHtml += metrics.methods.map(m => \`
-                              <div class="method-details">
-                                  <strong>\${m.name}</strong><br>
-                                  <div class="metric-item"><span>Linhas (LOC):</span> <span class="metric-value">\${m.lines}</span></div>
-                                  <div class="metric-item"><span>Parâmetros (NOP):</span> <span class="metric-value">\${m.nop}</span></div>
-                                  <div class="metric-item"><span>Complexidade (CC):</span> <span class="metric-value">\${m.cc}</span></div>
-                                  <div class="metric-item"><span>Acessos Externos (ATFD):</span> <span class="metric-value">\${m.atfd}</span></div>
-                              </div>
+                              <tr>
+                                <td>\${m.name}</td>
+                                <td>\${m.lines}</td>
+                                <td>\${m.nop}</td>
+                                <td>\${m.cc}</td>
+                                <td>\${m.atfd}</td>
+                              </tr>
                           \`).join('');
+                          methodsHtml += '</tbody></table>';
                       } else {
                           methodsHtml += '<p><small>Nenhum método encontrado.</small></p>';
                       }
 
                       debugDiv.innerHTML = \`
-                          <h4>Classe: \${metrics.className}</h4>
-                          <div class="metric-item"><span>Métodos (NOM):</span> <span class="metric-value">\${metrics.nom}</span></div>
-                          <div class="metric-item"><span>Atributos (NOA):</span> <span class="metric-value">\${metrics.noa}</span></div>
-                          <div class="metric-item"><span>Complexidade (WMC):</span> <span class="metric-value">\${metrics.wmc}</span></div>
-                          <div class="metric-item"><span>Falta de Coesão (LCOM):</span> <span class="metric-value">\${metrics.lcom}</span></div>
+                          <h4>Métricas da Classe: \${metrics.className}</h4>
+                          <table class="metrics-table">
+                            <tbody>
+                              <tr>
+                                <td>Métodos (NOM)</td>
+                                <td>\${metrics.nom}</td>
+                              </tr>
+                              <tr>
+                                <td>Atributos (NOA)</td>
+                                <td>\${metrics.noa}</td>
+                              </tr>
+                              <tr>
+                                <td>Complexidade Total (WMC)</td>
+                                <td>\${metrics.wmc}</td>
+                              </tr>
+                              <tr>
+                                <td>Falta de Coesão (LCOM)</td>
+                                <td>\${metrics.lcom}</td>
+                              </tr>
+                            </tbody>
+                          </table>
                           \${methodsHtml}
                       \`;
                   }
@@ -288,4 +311,5 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       </html>
     `;
   }
+
 }
