@@ -2,20 +2,17 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Interface para a configuração de uma única regra
 export interface RuleConfig {
   enabled: boolean;
-  [key: string]: any; // Para thresholds customizados (ex: threshold, nopThreshold, etc.)
+  [key: string]: any;
 }
 
-// Interface para a estrutura do arquivo apex-sentinel.json
 export interface ProjectConfigFile {
   rules: {
     [key: string]: Partial<RuleConfig>;
   };
 }
 
-// Interface para a configuração completa que a aplicação usa
 export interface FullConfig {
   rules: {
     [key: string]: RuleConfig;
@@ -26,7 +23,6 @@ export class ConfigurationManager {
   private config: FullConfig;
   private fileWatcher: vscode.FileSystemWatcher | undefined;
   
-  // Evento que a UI (Sidebar) pode "ouvir" para saber quando deve se atualizar
   public onConfigDidChange: vscode.EventEmitter<FullConfig> = new vscode.EventEmitter<FullConfig>();
 
   constructor() {
@@ -34,35 +30,23 @@ export class ConfigurationManager {
     this.setupFileWatcher();
   }
 
-  /**
-   * Retorna a configuração de uma regra específica (ex: "longMethod")
-   */
   public getRuleConfig(ruleName: string): RuleConfig {
-    // Retorna uma cópia para evitar mutações inesperadas
     return { ...(this.config.rules[ruleName] || { enabled: false }) };
   }
 
-  /**
-   * Retorna a configuração completa
-   */
   public getFullConfig(): FullConfig {
     return this.config;
   }
 
-  /**
-   * Tenta carregar a configuração, priorizando o arquivo de projeto.
-   */
   private loadFullConfig(): FullConfig {
-    const workspaceConfig = this.loadVscodeSettings(); // Fallback
-    const projectConfig = this.loadProjectFileConfig(); // Prioridade
+    const workspaceConfig = this.loadVscodeSettings();
+    const projectConfig = this.loadProjectFileConfig();
 
-    // "Mescla" as duas, dando prioridade ao projectConfig
-    // O deep merge aqui garante que "enabled: false" no projeto sobrescreva "enabled: true" no workspace
     const mergedRules = { ...workspaceConfig.rules };
     for (const ruleName in projectConfig.rules) {
       mergedRules[ruleName] = {
-        ...(mergedRules[ruleName] || {}), // Pega a base do workspace (se existir)
-        ...projectConfig.rules[ruleName], // Sobrescreve com o projeto
+        ...(mergedRules[ruleName] || {}),
+        ...projectConfig.rules[ruleName],
       };
     }
     
@@ -70,9 +54,6 @@ export class ConfigurationManager {
     return { rules: mergedRules };
   }
 
-  /**
-   * Carrega a configuração do arquivo apex-sentinel.json na raiz do projeto
-   */
   private loadProjectFileConfig(): Partial<ProjectConfigFile> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -96,13 +77,9 @@ export class ConfigurationManager {
     return { rules: {} };
   }
 
-  /**
-   * Carrega a configuração do VS Code (settings.json)
-   */
   private loadVscodeSettings(): FullConfig {
     const config = vscode.workspace.getConfiguration('apex-sentinel');
     
-    // Lê as configurações do seu package.json
     return {
       rules: {
         longMethod: {
@@ -121,14 +98,14 @@ export class ConfigurationManager {
         featureEnvy: {
           enabled: config.get('rules.featureEnvy.enabled', true),
           atfdThreshold: config.get('rules.featureEnvy.atfdThreshold', 5)
+        },
+        emptyCatchBlock: {
+          enabled: config.get('rules.emptyCatchBlock.enabled', true)
         }
       },
     };
   }
 
-  /**
-   * Observa mudanças no arquivo apex-sentinel.json
-   */
   private setupFileWatcher(): void {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -142,7 +119,6 @@ export class ConfigurationManager {
     const reload = () => {
       console.log('[ConfigManager] "apex-sentinel.json" modificado. Recarregando...');
       this.config = this.loadFullConfig();
-      // Emite o evento para que a UI (Sidebar) possa se atualizar
       this.onConfigDidChange.fire(this.config);
     };
 

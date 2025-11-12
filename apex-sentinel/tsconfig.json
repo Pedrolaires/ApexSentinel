@@ -4,6 +4,7 @@
     "target": "es2020",
     "outDir": "out",
     "rootDir": "src",
+    "skipLibCheck": true,
     "lib": [
       "es2020"
     ],

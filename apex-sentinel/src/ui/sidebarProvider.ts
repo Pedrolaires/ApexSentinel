@@ -168,7 +168,14 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                           </td>
                           <td><input type="checkbox" id="featureEnvy-enabled"></td>
                       </tr>
-                  </tbody>
+                      <tr>
+                          <td>Bloco Catch Vazio</td>
+                          <td>
+                            <label class="threshold-label">Detecta blocos 'catch' vazios.</label>
+                          </td>
+                          <td><input type="checkbox" id="emptyCatchBlock-enabled"></td>
+                      </tr>
+                      </tbody>
               </table>
               <button type="submit">Salvar</button>
           </form>
@@ -179,6 +186,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           <div id="debug-metrics">
               <p>Nenhum arquivo ativo ou análise pendente.</p>
           </div>
+
           <script>
               const vscode = acquireVsCodeApi();
               const form = document.getElementById('config-form');
@@ -209,6 +217,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       const featureEnvy = rules.featureEnvy || { enabled: true, atfdThreshold: 5 };
                       document.getElementById('featureEnvy-enabled').checked = featureEnvy.enabled;
                       document.getElementById('featureEnvy-atfdThreshold').value = featureEnvy.atfdThreshold;
+
+                      const emptyCatchBlock = rules.emptyCatchBlock || { enabled: true };
+                      document.getElementById('emptyCatchBlock-enabled').checked = emptyCatchBlock.enabled;
                   }
 
                   if (message.command === 'updateOpenFiles') {
@@ -229,7 +240,6 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                       }).join('');
                   }
 
-                  // LÓGICA DE RENDERIZAÇÃO DE DEBUG ATUALIZADA
                   if (message.command === 'updateDebugMetrics') {
                       const metrics = message.metrics;
                       if (!metrics) {
@@ -301,6 +311,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                           featureEnvy: {
                               enabled: document.getElementById('featureEnvy-enabled').checked,
                               atfdThreshold: parseInt(document.getElementById('featureEnvy-atfdThreshold').value, 10)
+                          },
+                          emptyCatchBlock: {
+                              enabled: document.getElementById('emptyCatchBlock-enabled').checked
                           }
                       }
                   };
@@ -311,5 +324,4 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       </html>
     `;
   }
-
 }

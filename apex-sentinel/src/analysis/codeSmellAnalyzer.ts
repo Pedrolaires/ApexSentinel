@@ -33,7 +33,7 @@ export class CodeSmellAnalyzer {
     for (const rule of activeRules) {
       const ruleConfig = configManager.getRuleConfig(rule.name);
       
-      const context = { metrics: newMetrics, uri: uri, config: ruleConfig };
+      const context = { metrics: newMetrics, uri: uri, config: ruleConfig, ast: parseResult.tree };
       const results = rule.apply(context);
       allResults = allResults.concat(results);
     }
