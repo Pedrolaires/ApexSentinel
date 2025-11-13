@@ -71,7 +71,7 @@ export class NestedLoopsRule implements ICodeSmellRule {
       return [];
     }
 
-    const threshold = context.config.threshold || 1;
+    const threshold = context.config.maxDepth ?? context.config.threshold ?? 1;
 
     const visitor = new NestedLoopVisitor(threshold);
     visitor.visit(ast);
