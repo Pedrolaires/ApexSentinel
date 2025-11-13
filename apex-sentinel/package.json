@@ -95,7 +95,12 @@
         "apex-sentinel.rules.magicNumber.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Habilita ou desabilita a regra que detecta 'Números Mágicos' (literais numéricos no código)."
+          "description": "Habilita ou desabilita a regra que detecta 'Números Mágicos'."
+        },
+        "apex-sentinel.rules.nestedLoops.threshold": {
+          "type": "number",
+          "default": 2,
+          "description": "Nível de aninhamento de laço a partir do qual um aviso deve ser gerado."
         },
         "apex-sentinel.scoring.penaltyPoints": {
           "type": "number",
@@ -125,7 +130,8 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "tsc -p ./ && npm run copy-webview",
+    "copy-webview": "node scripts/copy-webview.js",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
     "test": "node ./out/test/runTest.js"
@@ -139,6 +145,7 @@
     "@vscode/test-cli": "^0.0.11",
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.32.0",
+    "shelljs": "^0.10.0",
     "typescript": "^5.9.2"
   },
   "dependencies": {

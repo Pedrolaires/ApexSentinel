@@ -1,0 +1,59 @@
+body {
+  font-family: var(--vscode-font-family);
+  background: var(--vscode-sideBar-background);
+  color: var(--vscode-foreground);
+  padding: 10px;
+  font-size: 0.9em;
+}
+
+h1 {
+  font-size: 1em;
+  color: var(--vscode-editor-foreground);
+  margin-top: 10px;
+  border-bottom: 1px solid var(--vscode-editorWidget-border);
+  padding-bottom: 4px;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--vscode-editorWidget-border);
+  padding: 2px 0;
+}
+
+.score-good { color: var(--vscode-terminal-ansiGreen); }
+.score-warn { color: var(--vscode-terminal-ansiYellow); }
+.score-bad { color: var(--vscode-terminal-ansiRed); }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 5px;
+}
+
+th, td {
+  padding: 4px;
+  text-align: left;
+  border-bottom: 1px solid var(--vscode-editorWidget-border);
+}
+
+input {
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 2px;
+  padding: 2px;
+}
+
+button {
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  border: none;
+  border-radius: 2px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--vscode-button-hoverBackground);
+}

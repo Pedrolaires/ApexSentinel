@@ -39,9 +39,9 @@ export class EventManager {
     const onChangeActiveEditorListener = vscode.window.onDidChangeActiveTextEditor(
       (editor) => {
         if (editor && editor.document.languageId === 'apex') {
-          this.uiController.updateStatusBarForActiveFile(editor.document);
+          this.uiController.handleFileOpen(editor.document);
         } else {
-          this.uiController.updateStatusBarForActiveFile(undefined);
+          // this.uiController.updateStatusBarForActiveFile(undefined);
         }
       }
     );

@@ -49,6 +49,7 @@ export class DiagnosticController {
       case 'FEATURE_ENVY':
       case 'EMPTY_CATCH_BLOCK':
       case 'MAGIC_NUMBER':
+      case 'NESTED_LOOPS':
         return vscode.DiagnosticSeverity.Warning;
       default:
         return vscode.DiagnosticSeverity.Information;

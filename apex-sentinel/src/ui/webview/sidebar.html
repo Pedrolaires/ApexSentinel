@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Sentinel</title>
+  <link rel="stylesheet" href="{{CSS_URI}}">
+</head>
+<body>
+  <h1>Arquivos Abertos</h1>
+  <div class="file-item file-header">
+    <span>Nome</span>
+    <span>Pontuação</span>
+  </div>
+  <div id="open-files-list"><p>Carregando...</p></div>
+
+  <hr>
+
+  <h1>Configurações de Regras</h1>
+  <form id="config-form">
+    <table>
+      <thead>
+        <tr><th>Regra</th><th>Threshold(s)</th><th>Ativo</th></tr>
+      </thead>
+      <tbody id="rules-body">
+      </tbody>
+    </table>
+    <button type="submit">Salvar</button>
+  </form>
+
+  <hr>
+
+  <h1>Debug Métricas</h1>
+  <div id="debug-metrics"><p>Nenhum arquivo ativo.</p></div>
+
+  <script src="{{JS_URI}}"></script>
+</body>
+</html>

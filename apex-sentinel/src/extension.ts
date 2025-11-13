@@ -1,26 +1,39 @@
 import * as vscode from 'vscode';
 import { UserInterfaceController } from './ui/userInterfaceController';
-import { CommandManager } from './system/commandManager';
-import { ProviderManager } from './system/providerManager';
-import { EventManager } from './system/eventManager';
 
 let uiController: UserInterfaceController;
 
 export function activate(context: vscode.ExtensionContext) {
   uiController = new UserInterfaceController(context);
 
-  const commandManager = new CommandManager(uiController);
-  commandManager.registerCommands(context);
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      'apex-sentinel-sidebar',
+      uiController.sidebarProvider
+    )
+  );
 
-  const providerManager = new ProviderManager(uiController);
-  providerManager.registerProviders(context);
+  vscode.workspace.textDocuments.forEach(doc => {
+    if (doc.languageId === 'apex') {uiController.handleFileOpen(doc);}
+  });
 
-  const eventManager = new EventManager(uiController);
-  eventManager.registerEvents(context);
+  vscode.workspace.onDidOpenTextDocument(doc => {
+    if (doc.languageId === 'apex') {uiController.handleFileOpen(doc);}
+  });
+
+  vscode.workspace.onDidChangeTextDocument(event => {
+    if (event.document.languageId === 'apex') {uiController.analyzeDocument(event.document);}
+  });
+
+  vscode.workspace.onDidCloseTextDocument(doc => {
+    if (doc.languageId === 'apex') {uiController.handleFileClose(doc);}
+  });
+
+  vscode.window.onDidChangeActiveTextEditor(editor => {
+    uiController.updateStatusBarForActiveFile(editor?.document);
+  });
 }
 
 export function deactivate() {
-  if (uiController) {
-    uiController.dispose();
-  }
+  if (uiController) {uiController.dispose();}
 }
