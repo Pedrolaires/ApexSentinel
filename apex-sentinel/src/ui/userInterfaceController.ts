@@ -49,7 +49,6 @@ export class UserInterfaceController implements ISidebarController {
     this.diagnosticController.updateDiagnostics(document.uri, results);
     this.updateFileScore(document.uri, results.length);
 
-    // Atualiza UI
     if (metrics) {
       this.sidebarProvider.updateDebugMetrics(metrics);
     }
@@ -78,6 +77,8 @@ export class UserInterfaceController implements ISidebarController {
 
     this.statusBarItem.text = `$(shield) Quality: ${score}`;
     this.statusBarItem.tooltip = 'Pontuação de qualidade do código Apex';
+    this.statusBarItem.show();
+
   }
 
   public async saveConfiguration(config: FullConfig): Promise<void> {
@@ -88,17 +89,21 @@ export class UserInterfaceController implements ISidebarController {
     }
 
     const rootPath = workspaceFolders[0].uri.fsPath;
-    const configPath = path.join(rootPath, 'apex-sentinel.json');
+    const configPath = path.join(rootPath, '.apexsentinelrc.json');
     const jsonString = JSON.stringify(config, null, 2);
 
     try {
       fs.writeFileSync(configPath, jsonString, 'utf-8');
       vscode.window.showInformationMessage('[Apex Sentinel] Configuração salva com sucesso.');
+
+      (this.configManager as any)['config'] = config;
       this.refreshSidebarConfig();
+
     } catch (e) {
       vscode.window.showErrorMessage(`[Apex Sentinel] Erro ao salvar configuração: ${e}`);
     }
   }
+
 
   public refreshSidebarConfig(): void {
     const config = this.configManager.getFullConfig();

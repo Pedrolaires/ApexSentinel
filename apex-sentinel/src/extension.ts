@@ -30,7 +30,11 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   vscode.window.onDidChangeActiveTextEditor(editor => {
-    uiController.updateStatusBarForActiveFile(editor?.document);
+    if (editor && editor.document.languageId === 'apex') {
+      uiController.updateStatusBarForActiveFile(editor.document);
+    } else {
+      uiController.updateStatusBarForActiveFile(undefined);
+    }
   });
 }
 

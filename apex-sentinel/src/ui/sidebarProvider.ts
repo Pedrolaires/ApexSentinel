@@ -26,6 +26,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async (data) => {
       if (data.command === 'saveConfig') {
         await this.uiController.saveConfiguration(data.config);
+        this.uiController.refreshSidebarConfig();
+        vscode.window.showInformationMessage('[Apex Sentinel] Configuração salva e recarregada.');
       }
       if (data.command === 'ready') {
         this.uiController.refreshSidebarConfig();

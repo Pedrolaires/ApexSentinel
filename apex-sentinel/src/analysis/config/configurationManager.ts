@@ -61,17 +61,17 @@ export class ConfigurationManager {
     }
 
     const rootPath = workspaceFolders[0].uri.fsPath;
-    const configPath = path.join(rootPath, 'apex-sentinel.json');
+    const configPath = path.join(rootPath, '.apexsentinelrc.json');
 
     try {
       if (fs.existsSync(configPath)) {
         const fileContent = fs.readFileSync(configPath, 'utf-8');
         const parsedConfig = JSON.parse(fileContent) as ProjectConfigFile;
-        console.log('[ConfigManager] Carregada configuração do "apex-sentinel.json"');
+        console.log('[ConfigManager] Carregada configuração do ".apexsentinelrc.json"');
         return parsedConfig;
       }
     } catch (error) {
-      vscode.window.showErrorMessage(`[Apex Sentinel] Erro ao ler "apex-sentinel.json": ${error}`);
+      vscode.window.showErrorMessage(`[Apex Sentinel] Erro ao ler ".apexsentinelrc.json": ${error}`);
     }
     
     return { rules: {} };
@@ -118,13 +118,13 @@ export class ConfigurationManager {
     if (!workspaceFolders || workspaceFolders.length === 0) {
       return;
     }
-    
+
     const rootPath = workspaceFolders[0].uri.fsPath;
-    const watchPattern = new vscode.RelativePattern(rootPath, 'apex-sentinel.json');
+    const watchPattern = new vscode.RelativePattern(rootPath, '.apexsentinelrc.json');
     this.fileWatcher = vscode.workspace.createFileSystemWatcher(watchPattern);
 
     const reload = () => {
-      console.log('[ConfigManager] "apex-sentinel.json" modificado. Recarregando...');
+      console.log('[ConfigManager] ".apexsentinelrc.json" modificado. Recarregando...');
       this.config = this.loadFullConfig();
       this.onConfigDidChange.fire(this.config);
     };
@@ -133,6 +133,7 @@ export class ConfigurationManager {
     this.fileWatcher.onDidCreate(reload);
     this.fileWatcher.onDidDelete(reload);
   }
+
 
   public dispose(): void {
     this.fileWatcher?.dispose();
