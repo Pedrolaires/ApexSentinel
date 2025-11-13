@@ -104,6 +104,10 @@ export class ConfigurationManager {
         },
         magicNumber: {
           enabled: config.get('rules.magicNumber.enabled', true)
+        },
+        nestedLoops: {
+          enabled: config.get('rules.nestedLoops.enabled', true),
+          maxDepth: config.get('rules.nestedLoops.maxDepth', 2)
         }
       },
     };

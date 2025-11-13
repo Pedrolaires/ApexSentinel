@@ -4,6 +4,7 @@ import { GodClassRule } from './godClassRule';
 import { FeatureEnvyRule } from './featureEnvyRule';
 import { EmptyCatchBlockRule } from './emptyCatchBlockRule';
 import { MagicNumberRule } from './magicNumberRule';
+import { NestedLoopsRule } from './nestedLoopsRule';
 
 export class RuleFactory {
   private static availableRules: Map<string, new () => ICodeSmellRule> = new Map();
@@ -14,6 +15,7 @@ export class RuleFactory {
     this.availableRules.set('featureEnvy', FeatureEnvyRule);
     this.availableRules.set('emptyCatchBlock', EmptyCatchBlockRule);
     this.availableRules.set('magicNumber', MagicNumberRule);
+    this.availableRules.set('nestedLoops', NestedLoopsRule);
   }
 
   public static createAllRules(): ICodeSmellRule[] {

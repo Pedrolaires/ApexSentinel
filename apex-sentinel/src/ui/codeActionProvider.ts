@@ -14,6 +14,10 @@ export class CodeActionProvider implements vscode.CodeActionProvider {
     ['FEATURE_ENVY', {
       title: 'Aprender mais sobre "Feature Envy"',
       url: 'https://refactoring.guru/smells/feature-envy'
+    }],
+    ['NESTED_LOOPS', {
+      title: 'Aprender mais sobre (Refactoring Guru: Long Method)',
+      url: 'https://refactoring.guru/smells/long-method'
     }]
   ]);
 
