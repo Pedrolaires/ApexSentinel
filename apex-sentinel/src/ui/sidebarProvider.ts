@@ -33,6 +33,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         this.uiController.refreshSidebarConfig();
         this.uiController.refreshSidebarOpenFiles();
       }
+      if (data.command === 'resetDefaults') {
+        const defaultConfig = this.uiController.configManager.getFullConfig();
+        this.uiController.saveConfiguration(defaultConfig);
+        vscode.window.showInformationMessage('[Apex Sentinel] Configurações restauradas aos padrões.');
+      }
     });
   }
 

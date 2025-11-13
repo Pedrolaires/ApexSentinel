@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,31 +7,35 @@
   <link rel="stylesheet" href="{{CSS_URI}}">
 </head>
 <body>
-  <h1>Arquivos Abertos</h1>
-  <div class="file-item file-header">
-    <span>Nome</span>
-    <span>Pontuação</span>
+  <div class="section">
+    <h2>Arquivos Abertos</h2>
+    <div id="open-files-list" class="file-list">
+      <p>Nenhum arquivo Apex aberto.</p>
+    </div>
   </div>
-  <div id="open-files-list"><p>Carregando...</p></div>
 
-  <hr>
+  <div class="section">
+    <h2>Regras Configuráveis</h2>
+    <form id="config-form">
+      <div id="rules-container" class="rules-grid"></div>
+      <div class="buttons-row">
+        <button type="submit" class="save-btn">Salvar</button>
+        <button type="button" id="reset-defaults" class="reset-btn">Restaurar</button>
+      </div>
+    </form>
+  </div>
 
-  <h1>Configurações de Regras</h1>
-  <form id="config-form">
-    <table>
-      <thead>
-        <tr><th>Regra</th><th>Threshold(s)</th><th>Ativo</th></tr>
-      </thead>
-      <tbody id="rules-body">
-      </tbody>
-    </table>
-    <button type="submit">Salvar</button>
-  </form>
+  <div class="section">
+    <h2>Regras Gerais</h2>
+    <div id="general-rules" class="general-rules"></div>
+  </div>
 
-  <hr>
-
-  <h1>Debug Métricas</h1>
-  <div id="debug-metrics"><p>Nenhum arquivo ativo.</p></div>
+  <div class="section">
+    <h2>Métricas de Debug</h2>
+    <div id="debug-metrics" class="debug-container">
+      <p>Nenhum arquivo ativo ou análise pendente.</p>
+    </div>
+  </div>
 
   <script src="{{JS_URI}}"></script>
 </body>

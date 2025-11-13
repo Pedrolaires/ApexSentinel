@@ -11,13 +11,13 @@ import { ISidebarController } from './../analysis/config/ISidebarController';
 
 export class UserInterfaceController implements ISidebarController {
   private analyzer: CodeSmellAnalyzer;
-  private configManager: ConfigurationManager;
   private diagnosticController: DiagnosticController;
-  public sidebarProvider: SidebarProvider;
   private allRules: ICodeSmellRule[];
   private activeRules: ICodeSmellRule[] = [];
   private fileScores: Map<string, { name: string, score: number }> = new Map();
   private statusBarItem: vscode.StatusBarItem;
+  public sidebarProvider: SidebarProvider;
+  public configManager: ConfigurationManager;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);

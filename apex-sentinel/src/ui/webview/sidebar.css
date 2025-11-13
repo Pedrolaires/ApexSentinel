@@ -1,59 +1,180 @@
 body {
   font-family: var(--vscode-font-family);
-  background: var(--vscode-sideBar-background);
-  color: var(--vscode-foreground);
+  font-size: 13px;
   padding: 10px;
-  font-size: 0.9em;
+  color: var(--vscode-foreground);
+  background-color: var(--vscode-sideBar-background);
 }
 
-h1 {
-  font-size: 1em;
-  color: var(--vscode-editor-foreground);
-  margin-top: 10px;
+h2 {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: var(--vscode-sideBarTitle-foreground);
   border-bottom: 1px solid var(--vscode-editorWidget-border);
   padding-bottom: 4px;
 }
 
+.section {
+  margin-bottom: 20px;
+}
+
+/* ----------- ARQUIVOS ABERTOS ----------- */
 .file-item {
   display: flex;
   justify-content: space-between;
+  padding: 3px 0;
   border-bottom: 1px solid var(--vscode-editorWidget-border);
-  padding: 2px 0;
 }
-
+.file-score {
+  font-weight: bold;
+}
 .score-good { color: var(--vscode-terminal-ansiGreen); }
 .score-warn { color: var(--vscode-terminal-ansiYellow); }
 .score-bad { color: var(--vscode-terminal-ansiRed); }
 
-table {
+/* ----------- REGRAS CONFIGURÁVEIS ----------- */
+.rules-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rule-card {
+  background-color: var(--vscode-editorWidget-background);
+  border: 1px solid var(--vscode-editorWidget-border);
+  border-radius: 6px;
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+
+.rule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.rule-header span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rule-header .arrow {
+  transition: transform 0.2s ease;
+}
+
+.rule-header.collapsed .arrow {
+  transform: rotate(-90deg);
+}
+
+.rule-inputs {
+  margin-top: 6px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.rule-inputs.collapsed {
+  max-height: 0;
+  padding: 0;
+  margin: 0;
+  opacity: 0;
+}
+
+.rule-inputs label {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+
+.rule-inputs input[type="number"] {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 5px;
-}
-
-th, td {
-  padding: 4px;
-  text-align: left;
-  border-bottom: 1px solid var(--vscode-editorWidget-border);
-}
-
-input {
+  padding: 3px 5px;
+  margin-bottom: 5px;
+  box-sizing: border-box;
   background: var(--vscode-input-background);
-  color: var(--vscode-input-foreground);
   border: 1px solid var(--vscode-input-border);
-  border-radius: 2px;
-  padding: 2px;
+  color: var(--vscode-input-foreground);
+  border-radius: 4px;
+}
+
+/* ----------- REGRAS GERAIS ----------- */
+.general-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: start;
+}
+
+.general-rule {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 60px;
+  position: relative;
+}
+
+.general-rule-icon {
+  font-size: 22px;
+  margin-bottom: 3px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.general-rule-icon:hover {
+  transform: scale(1.1);
+}
+
+.general-rule input[type="checkbox"] {
+  transform: scale(1.2);
+}
+
+.nested-input {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  padding: 3px;
+  font-size: 12px;
+  text-align: center;
+  background: var(--vscode-input-background);
+  border: 1px solid var(--vscode-input-border);
+  border-radius: 4px;
+  color: var(--vscode-input-foreground);
+  display: none;
+  z-index: 10;
+}
+
+/* ----------- BOTÕES ----------- */
+.buttons-row {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 button {
   background: var(--vscode-button-background);
   color: var(--vscode-button-foreground);
   border: none;
-  border-radius: 2px;
+  border-radius: 4px;
   padding: 6px 10px;
   cursor: pointer;
+  font-size: 13px;
 }
 
 button:hover {
   background: var(--vscode-button-hoverBackground);
+}
+
+/* ----------- DEBUG ----------- */
+.debug-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.debug-container th, .debug-container td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--vscode-editorWidget-border);
+  text-align: left;
 }
