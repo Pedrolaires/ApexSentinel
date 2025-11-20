@@ -130,7 +130,8 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./ && npm run copy-webview",
+    "compile": "tsc -p ./ && npm run copy-webview && npm run copy-assets",
+    "copy-assets": "node scripts/copy-assets.js",
     "copy-webview": "node scripts/copy-webview.js",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile",
