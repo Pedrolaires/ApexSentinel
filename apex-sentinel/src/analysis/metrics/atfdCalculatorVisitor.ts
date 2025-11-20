@@ -23,29 +23,25 @@ export class AtfdCalculatorVisitor
 
   public visitDotExpression(ctx: DotExpressionContext): void {
     const leftSide = ctx.expression();
-    const leftSideText = leftSide.text;
+    const leftSideText = leftSide ? leftSide.text : '';
 
-    let isInternalAccess = false;
-    
+    let isThisAccess = false;
     if (leftSide instanceof PrimaryContext) {
       const primaryChild = leftSide.getChild(0);
       if (primaryChild instanceof ThisPrimaryContext) {
-        isInternalAccess = true;
+        isThisAccess = true;
       }
     }
 
-    if (this.internalAttributes.has(leftSideText)) {
-      isInternalAccess = true;
+    if (!isThisAccess) {
+      const rightSide = ctx.anyId()?.Identifier()?.symbol.text;
+      if (rightSide) {
+        const accessSignature = `${leftSideText}.${rightSide}`;
+        this.foreignDataAccesses.add(accessSignature);
+        console.log(`[ATFD-Debug] Acesso a dado externo detectado: ${accessSignature}`);
+      }
     }
 
-    const rightSide = ctx.anyId()?.Identifier()?.symbol.text;
-
-    if (rightSide && !isInternalAccess) {
-      const accessSignature = `${leftSideText}.${rightSide}`;
-      this.foreignDataAccesses.add(accessSignature);
-      console.log(`[ATFD-Debug] Acesso a dado externo detectado: ${accessSignature}`);
-    }
-    
     this.visitChildren(ctx);
   }
 
