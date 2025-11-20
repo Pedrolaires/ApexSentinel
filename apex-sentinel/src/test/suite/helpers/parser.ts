@@ -22,10 +22,22 @@ export function getMetricsFromCode(code: string) {
   const tree = parseApexFromString(code);
   const mv = new MetricVisitor();
   mv.visit(tree);
-  return mv.getMetrics();
+  return {
+    metrics: mv.getMetrics(),
+    ast: tree
+  };
 }
+
 
 export function getMetricsFromFixture(fixtureName: string) {
   const code = readFixture(fixtureName);
-  return getMetricsFromCode(code);
+  const tree = parseApexFromString(code);
+
+  const mv = new MetricVisitor();
+  mv.visit(tree);
+
+  return {
+    metrics: mv.getMetrics(),
+    ast: tree
+  };
 }

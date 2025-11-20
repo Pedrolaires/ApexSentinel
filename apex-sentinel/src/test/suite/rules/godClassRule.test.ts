@@ -19,7 +19,7 @@ describe('GodClassRule — Unit and Integration tests', () => {
         wmc: 100,
         lcom: 50
       });
-      const ctx = createContext(metrics, { enabled: true, wmcThreshold: 47, lcomThreshold: 10 } as RuleConfig);
+      const ctx = createContext(metrics, { enabled: true, wmcThreshold: 47, lcomThreshold: 10 } as RuleConfig, null);
       const rule = new GodClassRule();
       const res = rule.apply(ctx);
       assert.strictEqual(res.length, 1);
@@ -37,7 +37,7 @@ describe('GodClassRule — Unit and Integration tests', () => {
         wmc: 10,
         lcom: 0
       });
-      const ctx = createContext(metrics, { enabled: true, nomThreshold: 15 } as RuleConfig);
+      const ctx = createContext(metrics, { enabled: true, nomThreshold: 15 } as RuleConfig, null);
       const rule = new GodClassRule();
       const res = rule.apply(ctx);
       assert.strictEqual(res.length, 1);
@@ -55,7 +55,7 @@ describe('GodClassRule — Unit and Integration tests', () => {
         wmc: 10,
         lcom: 0
       });
-      const ctx = createContext(metrics, { enabled: true, noaThreshold: 10 } as RuleConfig);
+      const ctx = createContext(metrics, { enabled: true, noaThreshold: 10 } as RuleConfig, null);
       const rule = new GodClassRule();
       const res = rule.apply(ctx);
       assert.strictEqual(res.length, 1);
@@ -73,7 +73,7 @@ describe('GodClassRule — Unit and Integration tests', () => {
         wmc: 5,
         lcom: 0
       });
-      const ctx = createContext(metrics, { enabled: true } as RuleConfig);
+      const ctx = createContext(metrics, { enabled: true } as RuleConfig, null);
       const rule = new GodClassRule();
       const res = rule.apply(ctx);
       assert.strictEqual(res.length, 0);
@@ -82,8 +82,8 @@ describe('GodClassRule — Unit and Integration tests', () => {
 
   describe('Integration tests (fixtures)', () => {
     it('reports godClass_wmc_lcom.cls', () => {
-      const metrics = getMetricsFromFixture('godClass_wmc_lcom.cls');
-      const ctx = createContext(metrics, { enabled: true, wmcThreshold: 10, lcomThreshold: 1 } as RuleConfig);
+      const { metrics, ast } = getMetricsFromFixture('godClass_wmc_lcom.cls');
+      const ctx = createContext(metrics, { enabled: true, wmcThreshold: 10, lcomThreshold: 1 } as RuleConfig, null);
       const rule = new GodClassRule();
       const res = rule.apply(ctx);
       assert.ok(res.length >= 1);
@@ -91,8 +91,8 @@ describe('GodClassRule — Unit and Integration tests', () => {
     });
 
     it('reports godClass_manyMethods.cls', () => {
-      const metrics = getMetricsFromFixture('godClass_manyMethods.cls');
-      const ctx = createContext(metrics, { enabled: true, nomThreshold: 15 } as RuleConfig);
+      const { metrics, ast } = getMetricsFromFixture('godClass_manyMethods.cls');
+      const ctx = createContext(metrics, { enabled: true, nomThreshold: 15 } as RuleConfig, ast);
       const rule = new GodClassRule();
       const res = rule.apply(ctx);
       assert.ok(res.length >= 1);
@@ -100,8 +100,8 @@ describe('GodClassRule — Unit and Integration tests', () => {
     });
 
     it('reports godClass_manyAttributes.cls', () => {
-      const metrics = getMetricsFromFixture('godClass_manyAttributes.cls');
-      const ctx = createContext(metrics, { enabled: true, noaThreshold: 10 } as RuleConfig);
+      const { metrics, ast } = getMetricsFromFixture('godClass_manyAttributes.cls');
+      const ctx = createContext(metrics, { enabled: true, noaThreshold: 10 } as RuleConfig, ast);
       const rule = new GodClassRule();
       const res = rule.apply(ctx);
       assert.ok(res.length >= 1);
@@ -109,8 +109,8 @@ describe('GodClassRule — Unit and Integration tests', () => {
     });
 
     it('does not report for godClass_ok.cls', () => {
-      const metrics = getMetricsFromFixture('godClass_ok.cls');
-      const ctx = createContext(metrics, { enabled: true } as RuleConfig);
+      const { metrics, ast } = getMetricsFromFixture('godClass_ok.cls');
+      const ctx = createContext(metrics, { enabled: true } as RuleConfig, ast);
       const rule = new GodClassRule();
       const res = rule.apply(ctx);
       assert.strictEqual(res.length, 0);

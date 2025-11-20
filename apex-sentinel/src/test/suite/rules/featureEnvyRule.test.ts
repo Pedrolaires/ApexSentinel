@@ -13,7 +13,7 @@ describe('FeatureEnvyRule — Unit and Integration tests', () => {
         { name: 'm1', startLine: 10, atfd: 7 }
       ]);
 
-      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 5 } as RuleConfig);
+      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 5 } as RuleConfig, null);
       const rule = new FeatureEnvyRule();
       const res = rule.apply(ctx);
 
@@ -27,7 +27,7 @@ describe('FeatureEnvyRule — Unit and Integration tests', () => {
         { name: 'm1', startLine: 10, atfd: 1 }
       ]);
 
-      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 5 } as RuleConfig);
+      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 5 } as RuleConfig, null);
       const rule = new FeatureEnvyRule();
       const res = rule.apply(ctx);
 
@@ -37,8 +37,8 @@ describe('FeatureEnvyRule — Unit and Integration tests', () => {
 
   describe('Integration tests (fixtures)', () => {
     it('reports highAtfd.cls', () => {
-      const metrics = getMetricsFromFixture('highAtfd.cls');
-      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 3 } as RuleConfig);
+      const { metrics, ast } = getMetricsFromFixture('highAtfd.cls');
+      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 3 } as RuleConfig, ast);
 
       const rule = new FeatureEnvyRule();
       const res = rule.apply(ctx);
@@ -47,8 +47,8 @@ describe('FeatureEnvyRule — Unit and Integration tests', () => {
     });
 
     it('does not report lowAtfd.cls', () => {
-      const metrics = getMetricsFromFixture('lowAtfd.cls');
-      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 3 } as RuleConfig);
+      const { metrics, ast } = getMetricsFromFixture('lowAtfd.cls');
+      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 3 } as RuleConfig, ast);
 
       const rule = new FeatureEnvyRule();
       const res = rule.apply(ctx);
@@ -57,8 +57,8 @@ describe('FeatureEnvyRule — Unit and Integration tests', () => {
     });
 
     it('reports only the right method in mixedAtfd.cls', () => {
-      const metrics = getMetricsFromFixture('mixedAtfd.cls');
-      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 2 } as RuleConfig);
+      const { metrics, ast } = getMetricsFromFixture('mixedAtfd.cls');
+      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 2 } as RuleConfig, ast);
 
       const rule = new FeatureEnvyRule();
       const res = rule.apply(ctx);
@@ -68,8 +68,8 @@ describe('FeatureEnvyRule — Unit and Integration tests', () => {
     });
 
     it('does not report noAtfd.cls', () => {
-      const metrics = getMetricsFromFixture('noAtfd.cls');
-      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 1 } as RuleConfig);
+      const { metrics, ast } = getMetricsFromFixture('noAtfd.cls');
+      const ctx = createContext(metrics, { enabled: true, atfdThreshold: 1 } as RuleConfig, ast);
 
       const rule = new FeatureEnvyRule();
       const res = rule.apply(ctx);

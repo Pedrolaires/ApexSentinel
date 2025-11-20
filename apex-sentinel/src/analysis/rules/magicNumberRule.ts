@@ -31,16 +31,20 @@ class MagicNumberVisitor extends AbstractParseTreeVisitor<void> implements ApexP
     this.visitChildren(ctx);
   }
 
-  private isInsideFieldDeclaration(ctx: ParseTree): boolean {
-    let current: ParseTree | undefined = ctx;
-    while (current) {
-      if (current instanceof FieldDeclarationContext) {
-        return true; 
-      }
-      current = current.parent;
+private isInsideFieldDeclaration(ctx: ParseTree): boolean {
+  let current: ParseTree | undefined = ctx.parent as ParseTree;
+
+  while (current) {
+    if (current instanceof FieldDeclarationContext) {
+      return true;
     }
-    return false;
+
+    current = current.parent as ParseTree;
   }
+
+  return false;
+}
+
 
   public visitChildren(node: RuleNode): void {
     const n = node.childCount;

@@ -6,7 +6,7 @@ import { AnalysisContext } from '../../../analysis/rules/ICodeSmellRule';
 export function createContext(
   metrics: Map<string, any>,
   config: RuleConfig = { enabled: true },
-  ast: any = {} as any
+  ast: any
 ): AnalysisContext {
   return {
     metrics,
