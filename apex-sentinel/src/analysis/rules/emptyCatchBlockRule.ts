@@ -13,8 +13,9 @@ class EmptyCatchVisitor extends AbstractParseTreeVisitor<void> implements ApexPa
   visitCatchClause(ctx: CatchClauseContext): void {
     const block = ctx.block();
     
-    if (block && block.childCount === 2) 
-      {this.emptyCatches.push(ctx);}
+    if (block && block.statement().length === 0) {
+        this.emptyCatches.push(ctx);
+    }
     this.visitChildren(ctx); 
   }
 
