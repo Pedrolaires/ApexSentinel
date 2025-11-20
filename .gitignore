@@ -46,8 +46,6 @@ test-results/
 reports/
 *.spec.js
 *.spec.ts
-*.test.js
-*.test.ts
 
 # === Sistema de controle de versão auxiliar ===
 .env
