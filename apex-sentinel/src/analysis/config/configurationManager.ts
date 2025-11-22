@@ -36,7 +36,7 @@ export interface FullConfig {
 export class ConfigurationManager {
     private config: FullConfig;
     private fileWatcher: vscode.FileSystemWatcher | undefined;
-    private fsProvider: IFileSystem; // Dependência injetada
+    private fsProvider: IFileSystem;
 
     public onConfigDidChange: vscode.EventEmitter<FullConfig> = new vscode.EventEmitter<FullConfig>();
 

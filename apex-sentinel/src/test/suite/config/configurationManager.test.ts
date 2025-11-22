@@ -79,7 +79,6 @@ describe('ConfigurationManager Test Suite', () => {
         mockConfig.get.withArgs('rules.longMethod.threshold', 20).returns(30);
         mockConfig.get.callsFake((key: string, defaultValue: any) => defaultValue);
 
-        // Arquivo existe e retorna 40
         existsSyncStub.returns(true);
         const projectConfig = {
             rules: {

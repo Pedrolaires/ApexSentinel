@@ -1,4 +1,3 @@
-// test/suite/rules/godClassRule.test.ts
 import * as assert from 'assert';
 import { createContext } from '../helpers/contextFactory';
 import { getMetricsFromFixture } from '../helpers/parser';
