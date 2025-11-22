@@ -75,14 +75,6 @@ Coesãoe Acoplamento, ajudando desenvolvedores a manterem seus projetos limpos e
     * Abra o projeto no VS Code.
     * Pressione `F5` para abrir uma nova janela (Extension Host) com a extensão carregada.
 
-5. **Rodar Testes:**
-
-    ```bash
-    npm test
-    ```
-
----
-
 ## Instalação e Execução (VSCode)
 
 1. Entrar na aba de extensões do VisualStudio code ou no [marketplace](https://marketplace.visualstudio.com/VSCode)
