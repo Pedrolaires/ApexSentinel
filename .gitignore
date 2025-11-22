@@ -53,3 +53,7 @@ reports/
 .env.development
 .env.production
 .env.test
+
+
+# Random
+.sfdx
