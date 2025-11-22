@@ -4,6 +4,7 @@
   "description": "Apex Sentinel é uma extensão para o Visual Studio Code que fornece análises e feedbacks em tempo real sobre qualidade de código para a linguagem Apex.",
   "version": "0.0.1",
   "publisher": "ASolution",
+  "icon": "apex-sentinel-icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
