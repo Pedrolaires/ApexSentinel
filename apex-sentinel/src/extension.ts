@@ -24,12 +24,15 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(openDocCommand);
 
   const codeActionProvider = vscode.languages.registerCodeActionsProvider(
-    { language: 'apex', scheme: 'file' },
-    new CodeActionProvider(),
-    {
-      providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
-    }
-  );
+        [
+            { language: 'apex', scheme: 'file' },
+            { language: 'apex', scheme: 'untitled' } 
+        ],
+        new CodeActionProvider(),
+        {
+            providedCodeActionKinds: [vscode.CodeActionKind.QuickFix]
+        }
+    );
   context.subscriptions.push(codeActionProvider);
 
   vscode.workspace.textDocuments.forEach(doc => {
