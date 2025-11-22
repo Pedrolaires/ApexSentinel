@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { UserInterfaceController } from './ui/userInterfaceController';
-import { CodeActionProvider } from './ui/codeActionProvider'; // <--- Importante: Importar o provider
+import { CodeActionProvider } from './ui/codeActionProvider';
 
 let uiController: UserInterfaceController;
 
